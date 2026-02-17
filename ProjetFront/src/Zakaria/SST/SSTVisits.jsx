@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Row, Col, Badge, Button, ProgressBar, Table, Form, Tabs, Tab } from 'react-bootstrap';
+import { Card, Row, Col, Badge, Button, ProgressBar, Table, Form, Tabs, Tab, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import {
     Calendar,
     User,
@@ -55,9 +55,10 @@ const SSTVisits = () => {
         {
             id: 'VST-001',
             date: '2026-02-15',
-            doctor: 'Dr. Martin',
+            doctor: 'Dr. Martin, Dr. Dupont',
             department: 'Production',
             location: 'Cabinet Mobile A',
+            type: 'Périodique',
             progress: 0,
             status: 'planifiée',
             employees: [
@@ -71,6 +72,7 @@ const SSTVisits = () => {
             doctor: 'Dr. Dupont',
             department: 'Logistique',
             location: 'Infirmerie Centrale',
+            type: 'Reprise',
             progress: 45,
             status: 'en_cours',
             employees: [
@@ -84,6 +86,7 @@ const SSTVisits = () => {
             doctor: 'Dr. Martin',
             department: 'RH',
             location: 'Infirmerie Centrale',
+            type: 'Périodique',
             progress: 100,
             status: 'terminée',
             employees: [
@@ -157,11 +160,11 @@ const SSTVisits = () => {
             const total = employees.length;
             const completed = employees.filter(e => e.status === 'Complété' || e.status === 'Terminée').length;
             const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-            
+
             let status = 'planifiée';
             if (progress === 100) status = 'terminée';
             else if (progress > 0) status = 'en_cours';
-            
+
             return {
                 ...visit,
                 progress,
@@ -239,7 +242,7 @@ const SSTVisits = () => {
             filtered = filtered.filter(v => v.date <= visitFilters.endDate);
         }
         if (visitFilters.doctor) {
-            filtered = filtered.filter(v => v.doctor === visitFilters.doctor);
+            filtered = filtered.filter(v => v.doctor && v.doctor.toLowerCase().includes(visitFilters.doctor.toLowerCase()));
         }
         if (visitFilters.status) {
             filtered = filtered.filter(v => v.status === visitFilters.status);
@@ -249,13 +252,23 @@ const SSTVisits = () => {
     }, [searchQuery, processedVisits, visitFilters]);
 
     const handleCreateVisit = (formData) => {
+        // Transform selectedEmployees (IDs) back to full employee objects for the UI
+        const selectedEmployeeObjects = employees.filter(e => formData.selectedEmployees.includes(e.id));
+
+        const visitToSave = {
+            ...formData,
+            employees: selectedEmployeeObjects
+        };
+        // Clean up internal form field
+        delete visitToSave.selectedEmployees;
+
         if (editingVisit) {
-            setVisitsData(visitsData.map(v => v.id === editingVisit.id ? { ...v, ...formData } : v));
+            setVisitsData(visitsData.map(v => v.id === editingVisit.id ? { ...v, ...visitToSave } : v));
             Swal.fire("Mis à jour", "La visite a été mis à jour avec succès.", "success");
         } else {
             const newVisit = {
                 id: `VST-00${visitsData.length + 1}`,
-                ...formData,
+                ...visitToSave,
                 progress: 0,
                 status: 'planifiée'
             };
@@ -347,26 +360,46 @@ const SSTVisits = () => {
         },
         {
             key: 'doctor',
-            label: 'Médecin',
-            render: (item) => (
-                <div className="d-flex align-items-center gap-2">
-                    <div className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
-                        <User size={14} />
-                    </div>
-                    <span className="fw-bold small">{item.doctor}</span>
-                </div>
-            )
+            label: 'Médecin(s)',
+            render: (item) => {
+                const doctors = typeof item.doctor === 'string' ? item.doctor.split(', ') : (item.doctors || []);
+                const renderTooltip = (props) => (
+                    <Tooltip id="button-tooltip" {...props} className="extra-small fw-bold">
+                        {doctors.join(', ')}
+                    </Tooltip>
+                );
+
+                return (
+                    <OverlayTrigger
+                        placement="top"
+                        delay={{ show: 250, hide: 400 }}
+                        overlay={renderTooltip}
+                    >
+                        <div className="d-flex align-items-center gap-2 cursor-help" style={{ cursor: 'help' }}>
+                            <div className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
+                                <Stethoscope size={14} />
+                            </div>
+                            <div className="d-flex flex-column">
+                                <span className="fw-bold small text-dark">{doctors[0]}</span>
+                                {doctors.length > 1 && (
+                                    <span className="extra-small text-muted fw-bold">+{doctors.length - 1} autre(s)</span>
+                                )}
+                            </div>
+                        </div>
+                    </OverlayTrigger>
+                );
+            }
         },
-        
+
         {
             key: 'type',
             label: 'Type',
             render: (item) => (
-                <Badge 
+                <Badge
                     bg={
-                        item.type === 'Embauche' ? 'info' : 
-                        item.type === 'Reprise' ? 'warning' : 'primary'
-                    } 
+                        item.type === 'Embauche' ? 'info' :
+                            item.type === 'Reprise' ? 'warning' : 'primary'
+                    }
                     className="rounded-pill px-3 py-2 text-uppercase extra-small"
                 >
                     {item.type || 'Périodique'}
@@ -475,8 +508,8 @@ const SSTVisits = () => {
                                     <tr key={emp.id} style={{ borderBottom: '1px solid #eef2f1' }}>
                                         <td className="border-0 py-3">
                                             <div className="d-flex align-items-center gap-3">
-                                                <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
-                                                     style={{ width: '36px', height: '36px', fontSize: '12px', background: 'rgba(58, 138, 144, 0.1)', color: '#3a8a90' }}>
+                                                <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                                    style={{ width: '36px', height: '36px', fontSize: '12px', background: 'rgba(58, 138, 144, 0.1)', color: '#3a8a90' }}>
                                                     {emp.name?.split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div>
@@ -489,7 +522,7 @@ const SSTVisits = () => {
                                             <span className="text-muted small fw-bold">{emp.department}</span>
                                         </td>
                                         <td className="border-0 py-3 align-middle">
-                                            <Badge style={{ 
+                                            <Badge style={{
                                                 backgroundColor: emp.status === 'Apte' ? 'rgba(46, 213, 115, 0.1)' : 'rgba(255, 165, 2, 0.1)',
                                                 color: emp.status === 'Apte' ? '#2ed573' : '#ffa502',
                                                 border: 'none',
@@ -637,7 +670,7 @@ const SSTVisits = () => {
                             overflow: hidden !important;
                         }
                     `}</style>
-                    <div className="d-flex" style={{ width: '100%', padding: '0 20px' }}>
+                    <div className="d-flex" style={{ width: '100%', padding: '0 20px', height: isMobile ? 'auto' : 'calc(100vh - 180px)' }}>
                         <div className="container3 d-flex flex-column">
                             <div className="d-flex justify-content-between align-items-center mb-4">
                                 <div>
@@ -650,7 +683,7 @@ const SSTVisits = () => {
                                     </p>
                                 </div>
                                 <div className="d-flex align-items-center gap-3">
-                                    <div 
+                                    <div
                                         className="filter-icon-btn shadow-sm"
                                         onClick={() => setFiltersVisible(!filtersVisible)}
                                         style={{ border: filtersVisible ? '1px solid #ff4757' : '1px solid #eee', color: filtersVisible ? '#ff4757' : '#3a8a90' }}
@@ -720,6 +753,8 @@ const SSTVisits = () => {
                                                     <option value="">Tous les médecins</option>
                                                     <option>Dr. Martin</option>
                                                     <option>Dr. Dupont</option>
+                                                    <option>Dr. Leroy</option>
+                                                    <option>Dr. Bernard</option>
                                                 </Form.Select>
                                             </Col>
                                             <Col md={3}>
@@ -801,7 +836,7 @@ const SSTVisits = () => {
                                             if (v.id === selectedEmployeeForExam.visitId) {
                                                 return {
                                                     ...v,
-                                                    employees: v.employees.map(e => 
+                                                    employees: v.employees.map(e =>
                                                         e.id === selectedEmployeeForExam.id ? { ...e, status: 'Complété' } : e
                                                     )
                                                 };

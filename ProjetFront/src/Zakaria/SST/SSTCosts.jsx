@@ -197,7 +197,7 @@ const SSTCosts = () => {
         <ThemeProvider theme={createTheme()}>
             <Box className="postionPage" sx={{ ...dynamicStyles }}>
                 <Box component="main" sx={{ flexGrow: 1, p: isMobile ? 1 : 0, mt: isMobile ? 8 : 10 }}>
-                    <div className={isMobile ? "d-block" : "d-flex h-100"} style={{ position: 'relative', minHeight: 'calc(100vh - 120px)' }}>
+                    <div className={isMobile ? "d-block" : "d-flex"} style={{ position: 'relative', height: isMobile ? 'auto' : 'calc(100vh - 180px)', width: '100%', padding: isMobile ? '0 10px' : '0 20px' }}>
                         <div style={{ flex: 1, padding: isMobile ? '12px' : '2rem' }}>
                             <div className="mt-4">
                                 <div className="section-header mb-4">

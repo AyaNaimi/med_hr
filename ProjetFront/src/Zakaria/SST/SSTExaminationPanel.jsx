@@ -89,6 +89,10 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                     min-height: 0;
                 }
 
+                .scrollbar-teal::-webkit-scrollbar { width: 4px; }
+                .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
+
                 .sst-form-footer {
                     padding: 1.25rem 1.5rem;
                     background: #ffffff;
@@ -167,7 +171,7 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                     <h5>Examen Médical : {employee.name}</h5>
                 </div>
 
-                <div className="sst-form-content">
+                <div className="sst-form-content scrollbar-teal">
                     <div className="form-section-title">
                         <Activity size={14} /> Biométrie & Constantes
                     </div>
@@ -208,17 +212,17 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                             <div className="form-group-wrapper mb-2">
                                 <Form.Label className="form-label-enhanced fs-xs text-muted">Tension (mmHg)</Form.Label>
                                 <div className="d-flex gap-2">
-                                    <Form.Control 
-                                        placeholder="Sys" 
-                                        className="form-control-enhanced text-center" 
-                                        value={examData.biometrics.bp_systolic} 
-                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, bp_systolic: e.target.value } })} 
+                                    <Form.Control
+                                        placeholder="Sys"
+                                        className="form-control-enhanced text-center"
+                                        value={examData.biometrics.bp_systolic}
+                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, bp_systolic: e.target.value } })}
                                     />
-                                    <Form.Control 
-                                        placeholder="Dia" 
-                                        className="form-control-enhanced text-center" 
-                                        value={examData.biometrics.bp_diastolic} 
-                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, bp_diastolic: e.target.value } })} 
+                                    <Form.Control
+                                        placeholder="Dia"
+                                        className="form-control-enhanced text-center"
+                                        value={examData.biometrics.bp_diastolic}
+                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, bp_diastolic: e.target.value } })}
                                     />
                                 </div>
                             </div>
@@ -229,46 +233,46 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                                 <Form.Label className="form-label-enhanced fs-xs text-muted">Pouls & SpO2</Form.Label>
                                 <div className="d-flex gap-2">
                                     <div className="position-relative w-100">
-                                        <Form.Control 
-                                            placeholder="BPM" 
-                                            className="form-control-enhanced ps-4" 
-                                            value={examData.biometrics.pulse} 
-                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, pulse: e.target.value } })} 
+                                        <Form.Control
+                                            placeholder="BPM"
+                                            className="form-control-enhanced ps-4"
+                                            value={examData.biometrics.pulse}
+                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, pulse: e.target.value } })}
                                         />
                                         <Heart size={10} className="position-absolute top-50 start-0 translate-middle-y ms-2 text-danger opacity-50" />
                                     </div>
                                     <div className="position-relative w-100">
-                                        <Form.Control 
-                                            placeholder="%" 
-                                            className="form-control-enhanced ps-4" 
-                                            value={examData.biometrics.spo2} 
-                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, spo2: e.target.value } })} 
+                                        <Form.Control
+                                            placeholder="%"
+                                            className="form-control-enhanced ps-4"
+                                            value={examData.biometrics.spo2}
+                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, spo2: e.target.value } })}
                                         />
                                         <Activity size={10} className="position-absolute top-50 start-0 translate-middle-y ms-2 text-primary opacity-50" />
                                     </div>
                                 </div>
                             </div>
                         </Col>
-                        
+
                         <Col xs={6}>
                             <div className="form-group-wrapper mb-2">
                                 <Form.Label className="form-label-enhanced fs-xs text-muted">Glycémie & Temp.</Form.Label>
                                 <div className="d-flex gap-2">
                                     <div className="position-relative w-100">
-                                        <Form.Control 
-                                            placeholder="g/L" 
-                                            className="form-control-enhanced ps-4" 
-                                            value={examData.biometrics.glycemia} 
-                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, glycemia: e.target.value } })} 
+                                        <Form.Control
+                                            placeholder="g/L"
+                                            className="form-control-enhanced ps-4"
+                                            value={examData.biometrics.glycemia}
+                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, glycemia: e.target.value } })}
                                         />
                                         <Droplets size={10} className="position-absolute top-50 start-0 translate-middle-y ms-2 text-info opacity-50" />
                                     </div>
                                     <div className="position-relative w-100">
-                                        <Form.Control 
-                                            placeholder="°C" 
-                                            className="form-control-enhanced ps-4" 
-                                            value={examData.biometrics.temp} 
-                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, temp: e.target.value } })} 
+                                        <Form.Control
+                                            placeholder="°C"
+                                            className="form-control-enhanced ps-4"
+                                            value={examData.biometrics.temp}
+                                            onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, temp: e.target.value } })}
                                         />
                                         <Thermometer size={10} className="position-absolute top-50 start-0 translate-middle-y ms-2 text-warning opacity-50" />
                                     </div>
@@ -276,21 +280,21 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                             </div>
                         </Col>
 
-                         <Col xs={6}>
+                        <Col xs={6}>
                             <div className="form-group-wrapper mb-2">
                                 <Form.Label className="form-label-enhanced fs-xs text-muted">Vision (OD/OG)</Form.Label>
                                 <div className="d-flex gap-2">
-                                    <Form.Control 
-                                        placeholder="OD" 
-                                        className="form-control-enhanced text-center" 
-                                        value={examData.biometrics.vision_right} 
-                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, vision_right: e.target.value } })} 
+                                    <Form.Control
+                                        placeholder="OD"
+                                        className="form-control-enhanced text-center"
+                                        value={examData.biometrics.vision_right}
+                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, vision_right: e.target.value } })}
                                     />
-                                    <Form.Control 
-                                        placeholder="OG" 
-                                        className="form-control-enhanced text-center" 
-                                        value={examData.biometrics.vision_left} 
-                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, vision_left: e.target.value } })} 
+                                    <Form.Control
+                                        placeholder="OG"
+                                        className="form-control-enhanced text-center"
+                                        value={examData.biometrics.vision_left}
+                                        onChange={e => setExamData({ ...examData, biometrics: { ...examData.biometrics, vision_left: e.target.value } })}
                                     />
                                 </div>
                             </div>
@@ -387,8 +391,8 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
 
                     <div className="form-group-wrapper bg-light p-3 rounded-3 mt-2">
                         <div className="d-flex align-items-center justify-content-between mb-2">
-                             <Form.Label className="form-label-enhanced mb-0">Ordonnance & Conclusion</Form.Label>
-                             <Pill size={12} className="text-muted" />
+                            <Form.Label className="form-label-enhanced mb-0">Ordonnance & Conclusion</Form.Label>
+                            <Pill size={12} className="text-muted" />
                         </div>
                         <Form.Control
                             as="textarea"

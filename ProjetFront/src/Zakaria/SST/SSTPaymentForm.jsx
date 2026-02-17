@@ -94,7 +94,13 @@ const SSTPaymentForm = ({ onSubmit, onCancel, initialData }) => {
             flex: 1;
             overflow-y: auto;
             min-height: 0;
+            display: flex;
+            flex-direction: column;
         }
+
+        .scrollbar-teal::-webkit-scrollbar { width: 4px; }
+        .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
 
         .form-group-wrapper {
             margin-bottom: 1.25rem;
@@ -194,92 +200,95 @@ const SSTPaymentForm = ({ onSubmit, onCancel, initialData }) => {
                     <h5>{initialData ? 'Modifier Honoraires' : 'Déclarer des Honoraires'}</h5>
                 </div>
 
-                <div className="sst-form-body">
-                    <Form onSubmit={handleSubmit}>
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <FileText size={16} className="icon-accent" />
-                                N° Facture
-                            </Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="id"
-                                value={formData.id}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.id ? 'is-invalid' : ''}`}
-                                placeholder="Ex: F-2026-001"
-                            />
-                            {validationErrors.id && <span className="error-message">{validationErrors.id}</span>}
-                        </div>
+                <div className="sst-form-body scrollbar-teal">
+                    <Form onSubmit={handleSubmit} className="d-flex flex-column h-100">
+                        <div className="flex-grow-1">
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <FileText size={16} className="icon-accent" />
+                                    N° Facture
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="id"
+                                    value={formData.id}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.id ? 'is-invalid' : ''}`}
+                                    placeholder="Ex: F-2026-001"
+                                />
+                                {validationErrors.id && <span className="error-message">{validationErrors.id}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <User size={16} className="icon-accent" />
-                                Médecin concerné
-                            </Form.Label>
-                            <Form.Select
-                                name="doctor"
-                                value={formData.doctor}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.doctor ? 'is-invalid' : ''}`}
-                            >
-                                <option value="">Sélectionner un médecin</option>
-                                <option value="Dr. Martin">Dr. Martin</option>
-                                <option value="Dr. Dupont">Dr. Dupont</option>
-                            </Form.Select>
-                            {validationErrors.doctor && <span className="error-message">{validationErrors.doctor}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <User size={16} className="icon-accent" />
+                                    Médecin concerné
+                                </Form.Label>
+                                <Form.Select
+                                    name="doctor"
+                                    value={formData.doctor}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.doctor ? 'is-invalid' : ''}`}
+                                >
+                                    <option value="">Sélectionner un médecin</option>
+                                    <option value="Dr. Martin">Dr. Martin</option>
+                                    <option value="Dr. Dupont">Dr. Dupont</option>
+                                </Form.Select>
+                                {validationErrors.doctor && <span className="error-message">{validationErrors.doctor}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <DollarSign size={16} className="icon-accent" />
-                                Montant (€)
-                            </Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="amount"
-                                value={formData.amount}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.amount ? 'is-invalid' : ''}`}
-                                placeholder="0.00"
-                            />
-                            {validationErrors.amount && <span className="error-message">{validationErrors.amount}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <DollarSign size={16} className="icon-accent" />
+                                    Montant (€)
+                                </Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    name="amount"
+                                    value={formData.amount}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.amount ? 'is-invalid' : ''}`}
+                                    placeholder="0.00"
+                                />
+                                {validationErrors.amount && <span className="error-message">{validationErrors.amount}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Clock size={16} className="icon-accent" />
-                                Date de facturation
-                            </Form.Label>
-                            <Form.Control
-                                type="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.date ? 'is-invalid' : ''}`}
-                            />
-                            {validationErrors.date && <span className="error-message">{validationErrors.date}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Clock size={16} className="icon-accent" />
+                                    Date de facturation
+                                </Form.Label>
+                                <Form.Control
+                                    type="date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.date ? 'is-invalid' : ''}`}
+                                />
+                                {validationErrors.date && <span className="error-message">{validationErrors.date}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <CreditCard size={16} className="icon-accent" />
-                                Statut du paiement
-                            </Form.Label>
-                            <Form.Select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.status ? 'is-invalid' : ''}`}
-                            >
-                                <option value="">Sélectionner un statut</option>
-                                <option value="Payé">Payé</option>
-                                <option value="En attente">En attente</option>
-                            </Form.Select>
-                            {validationErrors.status && <span className="error-message">{validationErrors.status}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <CreditCard size={16} className="icon-accent" />
+                                    Statut du paiement
+                                </Form.Label>
+                                <Form.Select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.status ? 'is-invalid' : ''}`}
+                                >
+                                    <option value="">Sélectionner un statut</option>
+                                    <option value="Payé">Payé</option>
+                                    <option value="En attente">En attente</option>
+                                </Form.Select>
+                                {validationErrors.status && <span className="error-message">{validationErrors.status}</span>}
+                            </div>
 
-                        {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+                            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+
+                        </div>
 
                         <div className="form-actions">
                             <Button type="submit" disabled={loading} className="btn-primary-custom">

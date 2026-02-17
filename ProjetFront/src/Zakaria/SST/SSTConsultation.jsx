@@ -177,12 +177,12 @@ const SSTConsultation = () => {
     const filteredVisits = useMemo(() => {
         return visits.filter(v => {
             if (v.id === 'all') return false;
-            
+
             if (sidebarFilterDept && v.dept !== sidebarFilterDept) return false;
             if (sidebarFilterStatus && v.status !== sidebarFilterStatus) return false;
             if (sidebarFilterDateStart && v.date < sidebarFilterDateStart) return false;
             if (sidebarFilterDateEnd && v.date > sidebarFilterDateEnd) return false;
-            
+
             return true;
         });
     }, [visits, sidebarFilterDept, sidebarFilterStatus, sidebarFilterDateStart, sidebarFilterDateEnd]);
@@ -225,8 +225,8 @@ const SSTConsultation = () => {
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(p => 
-                (p.name?.toLowerCase().includes(query) || 
+            filtered = filtered.filter(p =>
+            (p.name?.toLowerCase().includes(query) ||
                 p.id?.toLowerCase().includes(query) ||
                 p.dept?.toLowerCase().includes(query))
             );
@@ -284,8 +284,8 @@ const SSTConsultation = () => {
             key: 'status',
             label: 'Statut',
             render: (item) => (
-                <Badge 
-                    bg={item.status === 'Complété' ? 'success' : 'warning'} 
+                <Badge
+                    bg={item.status === 'Complété' ? 'success' : 'warning'}
                     className="rounded-pill px-3 py-2 extra-small text-uppercase"
                 >
                     {item.status}
@@ -311,7 +311,8 @@ const SSTConsultation = () => {
                             transition: all 0.3s ease;
                             border: 1px solid #e9ecef;
                             box-shadow: 0 6px 20px rgba(8, 179, 173, 0.08) !important;
-                            width: ${isMobile ? '100%' : '320px'} !important;
+                            width: ${isMobile ? '100%' : '25%'} !important;
+                            min-width: ${isMobile ? '100%' : '280px'} !important;
                             flex-shrink: 0;
                             margin-right: ${isMobile ? '0' : '20px'};
                             margin-bottom: ${isMobile ? '20px' : '0'};
@@ -332,7 +333,7 @@ const SSTConsultation = () => {
                         }
 
                         .container3 {
-                            padding: ${isMobile ? '15px' : '24px'} !important;
+                            padding: ${isMobile ? '15px' : '20px 25px'} !important;
                             border: none !important;
                             border-radius: 12px !important;
                             background-color: #fff !important;
@@ -450,17 +451,17 @@ const SSTConsultation = () => {
                         .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
                         .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
                     `}</style>
-                    <div className={isMobile ? "d-block" : "d-flex"} style={{ width: '100%', padding: isMobile ? '0 10px' : '0 20px' }}>
+                    <div className={isMobile ? "d-block" : "d-flex"} style={{ width: '100%', padding: isMobile ? '0 10px' : '0 20px', height: isMobile ? 'auto' : 'calc(100vh - 180px)', overflow: 'hidden' }}>
                         {step === 0 ? (
                             <>
                                 {/* Left Side: Visits Selection */}
-                                <div className="groups-section">
+                                <div className="groups-section" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                     <div className="groups-header d-flex justify-content-between align-items-center">
                                         <h6 className="text-uppercase">
                                             <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
                                             SESSIONS DE VISITE
                                         </h6>
-                                        <div 
+                                        <div
                                             className="filter-icon-btn shadow-sm"
                                             onClick={() => setSidebarFiltersVisible(!sidebarFiltersVisible)}
                                         >
@@ -478,7 +479,7 @@ const SSTConsultation = () => {
                                             >
                                                 <div className="d-flex flex-column gap-2">
                                                     <Form.Label className="extra-small fw-bold text-muted mb-0">SERVICE / DÉPT</Form.Label>
-                                                    <Form.Select 
+                                                    <Form.Select
                                                         size="sm"
                                                         value={sidebarFilterDept}
                                                         onChange={(e) => setSidebarFilterDept(e.target.value)}
@@ -489,7 +490,7 @@ const SSTConsultation = () => {
                                                     </Form.Select>
 
                                                     <Form.Label className="extra-small fw-bold text-muted mb-0 mt-2">DÉBUT</Form.Label>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         type="date"
                                                         size="sm"
                                                         value={sidebarFilterDateStart}
@@ -498,7 +499,7 @@ const SSTConsultation = () => {
                                                     />
 
                                                     <Form.Label className="extra-small fw-bold text-muted mb-0 mt-2">FIN</Form.Label>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         type="date"
                                                         size="sm"
                                                         value={sidebarFilterDateEnd}
@@ -507,7 +508,7 @@ const SSTConsultation = () => {
                                                     />
 
                                                     <Form.Label className="extra-small fw-bold text-muted mb-0 mt-2">STATUT</Form.Label>
-                                                    <Form.Select 
+                                                    <Form.Select
                                                         size="sm"
                                                         value={sidebarFilterStatus}
                                                         onChange={(e) => setSidebarFilterStatus(e.target.value)}
@@ -524,7 +525,7 @@ const SSTConsultation = () => {
                                     </AnimatePresence>
 
                                     <div className="flex-grow-1 overflow-auto scrollbar-teal pe-2">
-                                        <div 
+                                        <div
                                             className={`department-item ${selectedVisitId === 'all' ? 'selected' : ''}`}
                                             onClick={() => setSelectedVisitId('all')}
                                         >
@@ -537,7 +538,7 @@ const SSTConsultation = () => {
                                         </div>
 
                                         {filteredVisits.map(visit => (
-                                            <div 
+                                            <div
                                                 key={visit.id}
                                                 className={`department-item ${selectedVisitId === visit.id ? 'selected' : ''}`}
                                                 onClick={() => setSelectedVisitId(visit.id)}
@@ -562,7 +563,7 @@ const SSTConsultation = () => {
                                 </div>
 
                                 {/* Right Side: Patient Table */}
-                                <div className="container3 d-flex flex-column">
+                                <div className="container3 d-flex flex-column" style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
                                     <div className="d-flex justify-content-between align-items-center mb-4">
                                         <div>
                                             <div className="d-flex align-items-center gap-2 mb-1">
@@ -574,20 +575,14 @@ const SSTConsultation = () => {
                                             </p>
                                         </div>
                                         <div className="d-flex gap-2">
-                                            <div 
+                                            <div
                                                 className="filter-icon-btn shadow-sm"
                                                 onClick={() => setTableFiltersVisible(!tableFiltersVisible)}
                                                 style={{ border: tableFiltersVisible ? '1px solid #ff4757' : '1px solid #eee', color: tableFiltersVisible ? '#ff4757' : '#3a8a90' }}
                                             >
                                                 <FontAwesomeIcon icon={tableFiltersVisible ? faClose : faFilter} />
                                             </div>
-                                            <Button 
-                                                className="btn-primary-teal border-0 rounded-3 py-2 px-3 shadow-sm d-flex align-items-center gap-2"
-                                                onClick={() => Swal.fire("Information", "Fonctionnalité d'ajout rapide bientôt disponible", "info")}
-                                            >
-                                                <Plus size={18} />
-                                                <span className="extra-small fw-black text-uppercase">Nouv. Consultation</span>
-                                            </Button>
+
                                         </div>
                                     </div>
 
@@ -602,8 +597,8 @@ const SSTConsultation = () => {
                                                 <Row className="g-3">
                                                     <Col md={4}>
                                                         <Form.Label className="extra-small fw-bold text-muted uppercase">Service / Département</Form.Label>
-                                                        <Form.Select 
-                                                            size="sm" 
+                                                        <Form.Select
+                                                            size="sm"
                                                             value={filterDept}
                                                             onChange={(e) => setFilterDept(e.target.value)}
                                                             className="rounded-3"
@@ -650,18 +645,18 @@ const SSTConsultation = () => {
                                 </div>
                             </>
                         ) : (
-                            <div 
+                            <div
                                 className="animate-in slide-in-from-right duration-500 w-100 scrollbar-teal"
-                                style={{ 
-                                    height: isMobile ? 'auto' : 'calc(100vh - 140px)', 
-                                    overflowY: isMobile ? 'visible' : 'auto', 
+                                style={{
+                                    height: '100%',
+                                    overflowY: isMobile ? 'visible' : 'auto',
                                     overflowX: 'hidden',
                                     paddingRight: isMobile ? '0' : '10px',
                                     paddingBottom: '20px'
                                 }}
                             >
                                 {/* Header Patient Info */}
-                                <div className="d-flex justify-content-between align-items-center mb-4 bg-white p-4 rounded-4 shadow-sm" style={{ borderLeft: '6px solid #3a8a90' }}>
+                                <div className="d-flex justify-content-between align-items-center mb-3 bg-white p-3 rounded-4 shadow-sm" style={{ borderLeft: '6px solid #3a8a90' }}>
                                     <div className="d-flex align-items-center gap-4">
                                         <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-black shadow-sm" style={{ width: '56px', height: '56px', fontSize: '18px', background: 'linear-gradient(135deg, #3a8a90 0%, #2c767c 100%)' }}>
                                             {(selectedPatient?.name?.split(' ') || []).map(n => n[0]).join('')}
@@ -679,15 +674,15 @@ const SSTConsultation = () => {
                                         </div>
                                     </div>
                                     <div className="d-flex gap-2">
-                                        <Button 
-                                            variant="outline-secondary" 
-                                            className="rounded-pill px-4 extra-small fw-black shadow-sm" 
+                                        <Button
+                                            variant="outline-secondary"
+                                            className="rounded-pill px-4 extra-small fw-black shadow-sm"
                                             onClick={() => { setSelectedPatient(null); setStep(0); }}
                                         >
                                             ANNULER
                                         </Button>
-                                        <Button 
-                                            className="btn-primary-teal rounded-pill px-4 extra-small fw-black shadow-sm border-0" 
+                                        <Button
+                                            className="btn-primary-teal rounded-pill px-4 extra-small fw-black shadow-sm border-0"
                                             onClick={() => {
                                                 Swal.fire({
                                                     title: "Valider l'examen ?",
@@ -956,7 +951,7 @@ const SSTConsultation = () => {
 
                                             {/* Card Historique des Visites - Timeline */}
                                             <Card className="border-0 shadow-sm rounded-4 overflow-hidden bg-white">
-                                                <div className="bg-white p-3 border-bottom d-flex align-items-center justify-content-between sticky-top" style={{zIndex: 5}}>
+                                                <div className="bg-white p-3 border-bottom d-flex align-items-center justify-content-between sticky-top" style={{ zIndex: 5 }}>
                                                     <div className="d-flex align-items-center gap-2">
                                                         <Clock size={18} className="text-secondary" />
                                                         <span className="fw-black text-dark text-uppercase extra-small tracking-widest">Historique Médical</span>
@@ -965,7 +960,7 @@ const SSTConsultation = () => {
                                                         {visitHistory.length} Dossiers
                                                     </Badge>
                                                 </div>
-                                                
+
                                                 <div className="p-0 bg-light bg-opacity-10 position-relative" style={{ maxHeight: '500px', overflowY: 'auto' }}>
                                                     {visitHistory.length === 0 ? (
                                                         <div className="text-center p-4 text-muted extra-small">Aucun historique disponible</div>
@@ -974,17 +969,16 @@ const SSTConsultation = () => {
                                                             {visitHistory.map((visit, index) => (
                                                                 <div key={visit.id} className="position-relative border-bottom border-light">
                                                                     {/* Vertical connector line handled by border-start of child or absolute div? doing simpler relative layout */}
-                                                                    <div 
+                                                                    <div
                                                                         className={`p-3 cursor-pointer transition-all hover-bg-light ${expandedVisitId === visit.id ? 'bg-light bg-opacity-50' : ''}`}
                                                                         onClick={() => toggleVisit(visit.id)}
                                                                     >
                                                                         <div className="d-flex gap-3">
                                                                             {/* Timeline Marker */}
-                                                                            <div className="d-flex flex-column align-items-center mt-1" style={{width: '24px'}}>
-                                                                                 <div className={`rounded-circle border border-2 d-flex align-items-center justify-content-center bg-white ${
-                                                                                    visit.aptitude === 'Apte' ? 'border-success text-success' : 
+                                                                            <div className="d-flex flex-column align-items-center mt-1" style={{ width: '24px' }}>
+                                                                                <div className={`rounded-circle border border-2 d-flex align-items-center justify-content-center bg-white ${visit.aptitude === 'Apte' ? 'border-success text-success' :
                                                                                     visit.aptitude === 'Restricted' ? 'border-warning text-warning' : 'border-danger text-danger'
-                                                                                }`} style={{width: '18px', height: '18px'}}>
+                                                                                    }`} style={{ width: '18px', height: '18px' }}>
                                                                                     {visit.aptitude === 'Apte' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
                                                                                 </div>
                                                                                 {index !== visitHistory.length - 1 && <div className="h-100 border-start border-2 border-light my-1"></div>}
@@ -1013,7 +1007,7 @@ const SSTConsultation = () => {
 
                                                                                 <AnimatePresence>
                                                                                     {expandedVisitId === visit.id && (
-                                                                                        <motion.div 
+                                                                                        <motion.div
                                                                                             initial={{ height: 0, opacity: 0 }}
                                                                                             animate={{ height: 'auto', opacity: 1 }}
                                                                                             exit={{ height: 0, opacity: 0 }}
@@ -1025,7 +1019,7 @@ const SSTConsultation = () => {
                                                                                                     <div className="badge bg-light text-dark border extra-small">TA: {visit.biometrics.bp}</div>
                                                                                                     <div className="badge bg-light text-dark border extra-small">Pouls: {visit.biometrics.pulse}</div>
                                                                                                 </div>
-                                                                                                
+
                                                                                                 <div className="mb-2">
                                                                                                     <div className="extra-small fw-black text-muted uppercase">Motif / Notes</div>
                                                                                                     <p className="extra-small text-dark mb-0">{visit.notes.subjective}</p>
@@ -1076,7 +1070,7 @@ const SSTConsultation = () => {
                                                                 <opt.icon size={20} />
                                                                 <div className="d-flex flex-column lh-1">
                                                                     <span className="extra-small bg-transparent uppercase tracking-wide">{opt.label}</span>
-                                                                    {aptitude === opt.id && <span className="extra-small opacity-75 fw-normal mt-1" style={{fontSize: '0.6rem'}}>{opt.desc}</span>}
+                                                                    {aptitude === opt.id && <span className="extra-small opacity-75 fw-normal mt-1" style={{ fontSize: '0.6rem' }}>{opt.desc}</span>}
                                                                 </div>
                                                             </div>
                                                             {aptitude === opt.id && <CheckCircle2 size={16} className="opacity-50" />}
@@ -1091,9 +1085,9 @@ const SSTConsultation = () => {
                                                                     <AlertTriangle size={14} className="text-warning" />
                                                                     <span className="extra-small fw-black text-warning uppercase">Détails des Réserves / Restrictions</span>
                                                                 </div>
-                                                                <Form.Control 
-                                                                    as="textarea" 
-                                                                    rows={3} 
+                                                                <Form.Control
+                                                                    as="textarea"
+                                                                    rows={3}
                                                                     className="bg-white border-warning border-opacity-25 text-dark extra-small fw-bold"
                                                                     placeholder="Précisez les aménagements (ex: pas de port de charge > 10kg)..."
                                                                 />
@@ -1107,16 +1101,16 @@ const SSTConsultation = () => {
                                                                     <span className="extra-small fw-black text-danger uppercase">Arrêt de Travail Requis</span>
                                                                 </div>
                                                                 <div className="d-flex align-items-center gap-2 mb-2">
-                                                                    <Form.Control type="number" size="sm" placeholder="Nb" className="bg-white border-danger border-opacity-25 text-danger fw-black text-center" style={{width: '60px'}} />
+                                                                    <Form.Control type="number" size="sm" placeholder="Nb" className="bg-white border-danger border-opacity-25 text-danger fw-black text-center" style={{ width: '60px' }} />
                                                                     <Form.Select size="sm" className="bg-white border-danger border-opacity-25 text-danger fw-bold flex-grow-1">
                                                                         <option>Jours</option>
                                                                         <option>Semaines</option>
                                                                         <option>Mois</option>
                                                                     </Form.Select>
                                                                 </div>
-                                                                <Form.Control 
+                                                                <Form.Control
                                                                     size="sm"
-                                                                    type="date" 
+                                                                    type="date"
                                                                     className="bg-white border-danger border-opacity-25 text-danger fw-bold"
                                                                     placeholder="Date de début"
                                                                 />
@@ -1160,9 +1154,9 @@ const SSTConsultation = () => {
                                                                 <Form.Label className="extra-small fw-black text-muted text-uppercase mb-0">Traitement & Ordonnance</Form.Label>
                                                                 <Pill size={12} className="text-muted" />
                                                             </div>
-                                                            <Form.Control 
-                                                                as="textarea" 
-                                                                rows={2} 
+                                                            <Form.Control
+                                                                as="textarea"
+                                                                rows={2}
                                                                 className="bg-white border-0 shadow-sm rounded-3 extra-small"
                                                                 placeholder="Rédiger l'ordonnance ici..."
                                                             />
@@ -1173,9 +1167,9 @@ const SSTConsultation = () => {
                                                                 <Form.Label className="extra-small fw-black text-muted text-uppercase mb-0">Conclusion & Suivi</Form.Label>
                                                                 <ClipboardList size={12} className="text-muted" />
                                                             </div>
-                                                            <Form.Control 
-                                                                as="textarea" 
-                                                                rows={2} 
+                                                            <Form.Control
+                                                                as="textarea"
+                                                                rows={2}
                                                                 className="bg-white border-0 shadow-sm rounded-3 extra-small mb-2"
                                                                 placeholder="Note de synthèse..."
                                                             />

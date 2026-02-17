@@ -116,13 +116,16 @@ const GenericSidePanel = ({ isOpen, onClose, children, defaultWidth = 30, title,
             )}
 
             {/* Body */}
-            <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                minHeight: 0
-            }}>
+            <div
+                className="scrollbar-teal"
+                style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0
+                }}
+            >
                 {children}
             </div>
 
@@ -136,6 +139,14 @@ const GenericSidePanel = ({ isOpen, onClose, children, defaultWidth = 30, title,
                     {footer}
                 </div>
             )}
+
+            <style>
+                {`
+                .scrollbar-teal::-webkit-scrollbar { width: 5px; }
+                .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
+                `}
+            </style>
         </div>
     );
 };

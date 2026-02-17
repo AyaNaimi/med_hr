@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
-import { User, Stethoscope, Briefcase, Phone, Mail, Upload, FileText, Camera } from 'lucide-react';
+import { User, Stethoscope, Briefcase, Phone, Mail, Upload, FileText, Camera, ZoomIn } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
     const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         if (files) {
-             setFormData(prev => ({
+            setFormData(prev => ({
                 ...prev,
                 [name]: name === 'otherDocs' ? Array.from(files) : files[0]
             }));
@@ -32,7 +33,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                 [name]: value
             }));
         }
-       
+
         if (validationErrors[name]) {
             setValidationErrors(prev => ({
                 ...prev,
@@ -47,7 +48,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
         if (!formData.firstName) errors.firstName = 'Le prénom est requis';
         if (!formData.specialty) errors.specialty = 'La spécialité est requise';
         if (!formData.type) errors.type = 'Le type est requis';
-        
+
         // Validation for mandatory Diploma
         if (!initialData && !formData.diplome) {
             errors.diplome = "Le diplôme d'état est obligatoire";
@@ -111,7 +112,13 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
             flex: 1;
             overflow-y: auto;
             min-height: 0;
+            display: flex;
+            flex-direction: column;
         }
+
+        .scrollbar-teal::-webkit-scrollbar { width: 4px; }
+        .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
 
         .form-group-wrapper {
             margin-bottom: 1.25rem;
@@ -203,6 +210,19 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
             min-width: 120px;
             transition: all 0.2s ease;
         }
+
+        .zoom-close-btn {
+            color: #ff4757 !important;
+            background: #fff !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+            border-radius: 50% !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .zoom-close-btn:hover {
+            background: #ff4757 !important;
+            color: #fff !important;
+        }
         `}
             </style>
 
@@ -211,148 +231,194 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                     <h5>{initialData ? 'Modifier Praticien' : 'Ajouter un praticien'}</h5>
                 </div>
 
-                <div className="sst-form-body">
-                    <Form onSubmit={handleSubmit}>
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <User size={16} className="icon-accent" />
-                                Nom
-                            </Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.name ? 'is-invalid' : ''}`}
-                                placeholder="Nom du praticien"
-                            />
-                            {validationErrors.name && <span className="error-message">{validationErrors.name}</span>}
-                        </div>
+                <div className="sst-form-body scrollbar-teal">
+                    <Form onSubmit={handleSubmit} className="d-flex flex-column h-100">
+                        <div className="flex-grow-1">
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <User size={16} className="icon-accent" />
+                                    Nom
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.name ? 'is-invalid' : ''}`}
+                                    placeholder="Nom du praticien"
+                                />
+                                {validationErrors.name && <span className="error-message">{validationErrors.name}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <User size={16} className="icon-accent" />
-                                Prénom
-                            </Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.firstName ? 'is-invalid' : ''}`}
-                                placeholder="Prénom du praticien"
-                            />
-                            {validationErrors.firstName && <span className="error-message">{validationErrors.firstName}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <User size={16} className="icon-accent" />
+                                    Prénom
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.firstName ? 'is-invalid' : ''}`}
+                                    placeholder="Prénom du praticien"
+                                />
+                                {validationErrors.firstName && <span className="error-message">{validationErrors.firstName}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Stethoscope size={16} className="icon-accent" />
-                                Spécialité
-                            </Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="specialty"
-                                value={formData.specialty}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.specialty ? 'is-invalid' : ''}`}
-                                placeholder="Ex: Généraliste, Travail..."
-                            />
-                            {validationErrors.specialty && <span className="error-message">{validationErrors.specialty}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Stethoscope size={16} className="icon-accent" />
+                                    Spécialité
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="specialty"
+                                    value={formData.specialty}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.specialty ? 'is-invalid' : ''}`}
+                                    placeholder="Ex: Généraliste, Travail..."
+                                />
+                                {validationErrors.specialty && <span className="error-message">{validationErrors.specialty}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Briefcase size={16} className="icon-accent" />
-                                Type
-                            </Form.Label>
-                            <Form.Select
-                                name="type"
-                                value={formData.type}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.type ? 'is-invalid' : ''}`}
-                            >
-                                <option value="">Sélectionner un type</option>
-                                <option value="Employé">Employé</option>
-                                <option value="Externe">Externe</option>
-                            </Form.Select>
-                            {validationErrors.type && <span className="error-message">{validationErrors.type}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Briefcase size={16} className="icon-accent" />
+                                    Type
+                                </Form.Label>
+                                <Form.Select
+                                    name="type"
+                                    value={formData.type}
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.type ? 'is-invalid' : ''}`}
+                                >
+                                    <option value="">Sélectionner un type</option>
+                                    <option value="Employé">Employé</option>
+                                    <option value="Externe">Externe</option>
+                                </Form.Select>
+                                {validationErrors.type && <span className="error-message">{validationErrors.type}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Phone size={16} className="icon-accent" />
-                                Téléphone
-                            </Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="form-control-enhanced"
-                                placeholder="06..."
-                            />
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Phone size={16} className="icon-accent" />
+                                    Téléphone
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="form-control-enhanced"
+                                    placeholder="06..."
+                                />
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Mail size={16} className="icon-accent" />
-                                Email
-                            </Form.Label>
-                            <Form.Control
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="form-control-enhanced"
-                                placeholder="exemple@med.com"
-                            />
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Mail size={16} className="icon-accent" />
+                                    Email
+                                </Form.Label>
+                                <Form.Control
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="form-control-enhanced"
+                                    placeholder="exemple@med.com"
+                                />
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Camera size={16} className="icon-accent" />
-                                Photo du praticien
-                            </Form.Label>
-                            <Form.Control
-                                type="file"
-                                name="photo"
-                                onChange={handleChange}
-                                accept="image/*"
-                                className="form-control-enhanced"
-                            />
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Camera size={16} className="icon-accent" />
+                                    Photo du praticien
+                                </Form.Label>
+                                <div className="d-flex align-items-center gap-3">
+                                    <div className="flex-grow-1">
+                                        <Form.Control
+                                            type="file"
+                                            name="photo"
+                                            onChange={handleChange}
+                                            accept="image/*"
+                                            className="form-control-enhanced"
+                                        />
+                                    </div>
+                                    {(formData.photo || initialData?.photo) && (
+                                        <div
+                                            className="position-relative"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => {
+                                                const url = formData.photo
+                                                    ? (typeof formData.photo === 'string' ? formData.photo : URL.createObjectURL(formData.photo))
+                                                    : (typeof initialData.photo === 'string' ? initialData.photo : URL.createObjectURL(initialData.photo));
+                                                Swal.fire({
+                                                    title: `${formData.firstName} ${formData.name}`,
+                                                    imageUrl: url,
+                                                    imageAlt: 'Photo du praticien',
+                                                    showConfirmButton: false,
+                                                    showCloseButton: true,
+                                                    imageWidth: 400,
+                                                    imageHeight: 400,
+                                                    imageClass: 'rounded-4 object-fit-cover shadow-sm',
+                                                    customClass: {
+                                                        popup: 'rounded-4',
+                                                        closeButton: 'zoom-close-btn'
+                                                    },
+                                                    width: 'auto',
+                                                    padding: '2rem'
+                                                });
+                                            }}
+                                        >
+                                            <img
+                                                src={formData.photo
+                                                    ? (typeof formData.photo === 'string' ? formData.photo : URL.createObjectURL(formData.photo))
+                                                    : (typeof initialData.photo === 'string' ? initialData.photo : URL.createObjectURL(initialData.photo))}
+                                                alt="Preview"
+                                                className="rounded-circle object-fit-cover shadow-sm border"
+                                                style={{ width: '45px', height: '45px' }}
+                                            />
+                                            <div className="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', border: '1px solid #eee' }}>
+                                                <ZoomIn size={10} className="text-primary" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <FileText size={16} className="icon-accent" />
-                                Diplôme d'état <span className="text-danger">*</span>
-                            </Form.Label>
-                            <Form.Control
-                                type="file"
-                                name="diplome"
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.diplome ? 'is-invalid' : ''}`}
-                                accept=".pdf,.jpg,.jpeg,.png"
-                            />
-                            {validationErrors.diplome && <span className="error-message">{validationErrors.diplome}</span>}
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <FileText size={16} className="icon-accent" />
+                                    Diplôme d'état <span className="text-danger">*</span>
+                                </Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    name="diplome"
+                                    onChange={handleChange}
+                                    className={`form-control-enhanced ${validationErrors.diplome ? 'is-invalid' : ''}`}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                                {validationErrors.diplome && <span className="error-message">{validationErrors.diplome}</span>}
+                            </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">
-                                <Upload size={16} className="icon-accent" />
-                                Autres documents
-                            </Form.Label>
-                            <Form.Control
-                                type="file"
-                                name="otherDocs"
-                                onChange={handleChange}
-                                multiple
-                                className="form-control-enhanced"
-                            />
-                        </div>
+                            <div className="form-group-wrapper">
+                                <Form.Label className="form-label-enhanced">
+                                    <Upload size={16} className="icon-accent" />
+                                    Autres documents
+                                </Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    name="otherDocs"
+                                    onChange={handleChange}
+                                    multiple
+                                    className="form-control-enhanced"
+                                />
+                            </div>
 
-                        {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+                            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+
+                        </div>
 
                         <div className="form-actions">
                             <Button type="submit" disabled={loading} className="btn-primary-custom">

@@ -22,7 +22,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { Fab, Toolbar } from "@mui/material";
 import { BsShop } from "react-icons/bs";
-import { useOpen } from "../../Acceuil/OpenProvider.jsx"; 
+import { useOpen } from "../../Acceuil/OpenProvider.jsx";
 import { BiPlus } from "react-icons/bi";
 import ExpandRTable from "../Employe/ExpandRTable";
 import PageHeader from "../../ComponentHistorique/PageHeader";
@@ -63,7 +63,7 @@ const Societe = () => {
     right: "-900px",
   });
   const [tableContainerStyle, setTableContainerStyle] = useState({
-    width:"100%"
+    width: "100%"
   });
   const { open, isMobile } = useOpen();
   const { dynamicStyles } = useOpen();
@@ -115,14 +115,14 @@ const Societe = () => {
     queryFn: fetchAgent,
     staleTime: Infinity,
     refetchInterval: 1000 * 60 * 10,
-    refetchOnMount: false, 
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-  
+
   });
 
   const produits = data?.societes || [];
   const user = data?.user || null;
-  
+
 
 
   const handleSearch = (term) => {
@@ -183,7 +183,7 @@ const Societe = () => {
           axios
             .delete(`http://localhost:8000/api/agents/${id}`)
             .then((response) => {
-              refetch();            
+              refetch();
             })
             .catch((error) => {
               console.error("Error deleting product:", error);
@@ -231,7 +231,7 @@ const Societe = () => {
           .delete(`http://localhost:8000/api/societes/${id}`)
           .then((response) => {
             refetch();
-              Swal.fire({
+            Swal.fire({
               icon: "success",
               title: "Succès!",
               text: "Agent supprimé avec succès.",
@@ -248,11 +248,11 @@ const Societe = () => {
             } else if (error.response && error.response.status === 400) {
               // Afficher le message d'erreur dans Swal.fire()
               Swal.fire({
-                  icon: "error",
-                  title: "Erreur",
-                  text: error.response.data.error
+                icon: "error",
+                title: "Erreur",
+                text: error.response.data.error
               });
-          } else {
+            } else {
               Swal.fire({
                 icon: "error",
                 title: "Erreur!",
@@ -282,7 +282,7 @@ const Societe = () => {
     setTableContainerStyle({ width: "61.5%" });
   };
 
-  
+
   const handleSubmit = async (formData) => {
     try {
       const apiUrl = editingProduit
@@ -365,9 +365,9 @@ const Societe = () => {
       setFilteredProduits(filtered);
     }
   }, [produits, globalSearch]);
-  
 
-  
+
+
   const [genreFiltre, setGenreFiltre] = useState("");
 
   // Fonction pour filtrer les produits
@@ -375,7 +375,7 @@ const Societe = () => {
   //     genreFiltre ? produit.genre === genreFiltre : true
   // );
 
-console.log('produit',produits)
+  console.log('produit', produits)
 
   // Définir les colonnes pour ExpandRTable
   const columns = [
@@ -423,7 +423,7 @@ console.log('produit',produits)
 
   const handleFilterChange = (key, value) => {
     setFilterOptions(prev => ({
-      filters: prev.filters.map(filter => 
+      filters: prev.filters.map(filter =>
         filter.key === key ? { ...filter, value } : filter
       )
     }));
@@ -441,8 +441,8 @@ console.log('produit',produits)
       setTitle('');
     };
   }, [setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, clearActions, handlePrint, exportToPDF, exportToExcel]);
-  
-  
+
+
 
 
   useEffect(() => {
@@ -457,83 +457,86 @@ console.log('produit',produits)
     <>
 
 
-    <ThemeProvider theme={createTheme()}>
-      <Box className="postionPage" sx={{ ...dynamicStyles}}>
-      <Box component="main" sx={{ flexGrow: 1, p: 0, mt: 12 }}>
-        <div style={{ 
-        display: "flex", 
-        flexDirection: isMobile ? "column" : "row",
-        flex: 1, 
-        position: "relative",
-        margin: 0,
-        padding: isMobile ? "10px" : 0,
-        height: isMobile ? "auto" : "calc(100vh - 80px)",
-        overflowY: isMobile ? "auto" : "hidden"}}
-      >
+      <ThemeProvider theme={createTheme()}>
+        <Box className="postionPage" sx={{ ...dynamicStyles }}>
+          <Box component="main" sx={{ flexGrow: 1, p: 0, mt: 12 }}>
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              flex: 1,
+              position: "relative",
+              margin: 0,
+              padding: isMobile ? "10px" : 0,
+              height: isMobile ? "auto" : "calc(100vh - 80px)",
+              overflowY: isMobile ? "auto" : "hidden"
+            }}
+            >
 
 
 
 
-            {showForm && (
-              <div
-                style={{
-                  position: 'fixed',
-                  right: isMobile ? '5%' : '0',
-                  zIndex: 2000,
-                  overflowY: 'auto',
-                  top: isMobile ? '10%' : '-8.2%',
-                  width: isMobile ? '90%' : '20%',
-                  height: isMobile ? '80%' : '84%',
-                  marginTop: isMobile ? '0' : '8.7%',
-                  marginRight: isMobile ? '0' : '1%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'flex-start',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                  backgroundColor: '#fff',
+              {showForm && (
+                <div
+                  className="scrollbar-teal"
+                  style={{
+                    position: 'fixed',
+                    right: isMobile ? '5%' : '0',
+                    zIndex: 2000,
+                    overflowY: 'auto',
+                    top: isMobile ? '10%' : '-8.2%',
+                    width: isMobile ? '90%' : '20%',
+                    height: isMobile ? '80%' : '84%',
+                    marginTop: isMobile ? '0' : '8.7%',
+                    marginRight: isMobile ? '0' : '1%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                    backgroundColor: '#fff',
 
-                }}
-              >
-                <SocieteForm
-                  onSubmit={handleSubmit}
-                  onCancel={closeForm}
-                  initialData={editingProduit}
-                />
-              </div>
-            )}
-
-
-<div className="container3" style={{ 
-              width: (showForm && !isMobile) ? '74.5%' : '99%',
-              marginLeft: isMobile ? '0.5%' : (showForm ? '0.5%' : '0.5%') }}>
+                  }}
+                >
+                  <SocieteForm
+                    onSubmit={handleSubmit}
+                    onCancel={closeForm}
+                    initialData={editingProduit}
+                  />
+                </div>
+              )}
 
 
-                 <div className="mt-4">
-                    <div className="section-header mb-3">
-                        <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span className="section-title mb-1">
-                                    <i className="fas fa-calendar-times me-2"></i>
-                                    Détails Société
-                                </span>
-                                <p className="section-description text-muted mb-0">
-                                    {produits.length} société{produits.length > 1 ? 's' : ''} actuellement enregistrée{produits.length > 1 ? 's' : ''}
-                                </p>
-                            </div>
-                            <Button
-            onClick={handleShowFormButtonClick}
-            className="btn btn-outline-primary d-flex align-items-center"
-                                size="sm"
-                                style={{ height:'45px' }}
+              <div className="container3" style={{
+                width: (showForm && !isMobile) ? '74.5%' : '99%',
+                marginLeft: isMobile ? '0.5%' : (showForm ? '0.5%' : '0.5%')
+              }}>
 
-                            >
-            <FaPlusCircle className="me-2" />
-            Ajouter une société
-                            </Button>
-                        </div>
+
+                <div className="mt-4">
+                  <div className="section-header mb-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                        <span className="section-title mb-1">
+                          <i className="fas fa-calendar-times me-2"></i>
+                          Détails Société
+                        </span>
+                        <p className="section-description text-muted mb-0">
+                          {produits.length} société{produits.length > 1 ? 's' : ''} actuellement enregistrée{produits.length > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleShowFormButtonClick}
+                        className="btn btn-outline-primary d-flex align-items-center"
+                        size="sm"
+                        style={{ height: '45px' }}
+
+                      >
+                        <FaPlusCircle className="me-2" />
+                        Ajouter une société
+                      </Button>
                     </div>
                   </div>
+                </div>
 
 
 
@@ -545,7 +548,7 @@ console.log('produit',produits)
 
 
 
-<ExpandRTable
+                <ExpandRTable
                   columns={[
                     { key: 'id', label: 'ID' },
                     { key: 'RaisonSocial', label: 'Raison Sociale' },
@@ -572,15 +575,15 @@ console.log('produit',produits)
                 />
 
               </div>
-          </div>
+            </div>
 
 
 
 
+          </Box>
         </Box>
-      </Box>
-    </ThemeProvider>
-    <style jsx>{`     
+      </ThemeProvider >
+      <style jsx>{`     
             
             /* Styles de section header */
             .section-header {
@@ -634,7 +637,7 @@ font-size: 1.2rem;
 
 
 
-</>
+    </>
 
   );
 };

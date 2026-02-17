@@ -68,6 +68,10 @@ const SSTPatientDossierPanel = ({ employee, onClose }) => {
                     min-height: 0;
                 }
 
+                .scrollbar-teal::-webkit-scrollbar { width: 4px; }
+                .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
+
                 .sst-form-footer {
                     padding: 1.25rem 1.5rem;
                     background: #ffffff;
@@ -123,7 +127,7 @@ const SSTPatientDossierPanel = ({ employee, onClose }) => {
                 <h5>Dossier Médical : {employee.name}</h5>
             </div>
 
-            <div className="sst-form-content">
+            <div className="sst-form-content scrollbar-teal">
                 <Tabs defaultActiveKey="history" className="custom-tabs-sst">
                     <Tab eventKey="history" title="Historique & Synthèse" className="p-4">
                         <div className="d-flex align-items-center justify-content-between mb-4 bg-light p-3 rounded-4">

@@ -23,8 +23,8 @@ import { HeaderProvider } from './Acceuil/HeaderContext';
 import Societe from './Zakaria/Societe/Societe.jsx';
 import SSTDashboard from './Zakaria/SST/SSTDashboard.jsx';
 import SSTVisits from './Zakaria/SST/SSTVisits.jsx';
-import SSTMedicalRecords from './Zakaria/SST/SSTMedicalRecords.jsx';
-import SSTPayments from './Zakaria/SST/SSTPayments.jsx';
+import SSTMedicalRecordsManager from './Zakaria/SST/SSTMedicalRecordsManager.jsx';
+import SSTFinancialManagement from './Zakaria/SST/SSTFinancialManagement.jsx';
 import SSTCosts from './Zakaria/SST/SSTCosts.jsx';
 import SSTConsultation from './Zakaria/SST/SSTConsultation.jsx';
 import SSTPractitioners from './Zakaria/SST/SSTPractitioners.jsx';
@@ -35,47 +35,47 @@ import Login from './Login/Login.jsx';
 import Calendrie from './Zakaria/Calendrie.jsx';
 
 const App = () => {
-  const location = useLocation();
-  const showNavigation = location.pathname !== '/login';
-  return (
-    <AuthProvider>
-      <OpenProvider>
-        <HeaderProvider>
-          {showNavigation && <Navigation />}
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
+    const location = useLocation();
+    const showNavigation = location.pathname !== '/login';
+    return (
+        <AuthProvider>
+            <OpenProvider>
+                <HeaderProvider>
+                    {showNavigation && <Navigation />}
+                    <Routes>
+                        <Route path="/" element={<Dashboard />} />
 
-            <Route path="/login" element={<Login />} />
+                        <Route path="/login" element={<Login />} />
 
-            <Route path="/employes" element={<DepartementManager />} />
-
-
-
-            <Route path="/emphistorique" element={<EmpHistorique />} />
+                        <Route path="/employes" element={<DepartementManager />} />
 
 
+
+                        <Route path="/emphistorique" element={<EmpHistorique />} />
 
 
 
 
-            <Route path="/societes" element={<Societe />} />
-            <Route path="/sst" element={<SSTDashboard />} />
-            <Route path="/sst-visites" element={<SSTVisits />} />
-            <Route path="/sst-dossiers" element={<SSTMedicalRecords />} />
-            <Route path="/sst-paiements" element={<SSTPayments />} />
-            <Route path="/sst-couts" element={<SSTCosts />} />
-            <Route path="/sst-consultation" element={<SSTConsultation />} />
-            <Route path="/sst-praticiens" element={<SSTPractitioners />} />
-            <Route path="/sst-collaborateurs" element={<SSTEmployees />} />
-            <Route path="/sst-societes" element={<SSTSociete />} />
 
 
-            <Route path="/calendrier" element={<Calendrie />} />
-          </Routes>
-        </HeaderProvider>
-      </OpenProvider>
-    </AuthProvider>
-  );
+                        <Route path="/societes" element={<Societe />} />
+                        <Route path="/sst" element={<SSTDashboard />} />
+                        <Route path="/sst-visites" element={<SSTVisits />} />
+                        <Route path="/sst-dossiers" element={<SSTMedicalRecordsManager />} />
+                        <Route path="/sst-paiements" element={<SSTFinancialManagement />} />
+                        <Route path="/sst-couts" element={<SSTCosts />} />
+                        <Route path="/sst-consultation" element={<SSTConsultation />} />
+                        <Route path="/sst-praticiens" element={<SSTPractitioners />} />
+                        <Route path="/sst-collaborateurs" element={<SSTEmployees />} />
+                        <Route path="/sst-societes" element={<SSTSociete />} />
+
+
+                        <Route path="/calendrier" element={<Calendrie />} />
+                    </Routes>
+                </HeaderProvider>
+            </OpenProvider>
+        </AuthProvider>
+    );
 };
 
 export default App;

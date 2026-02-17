@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Form, Button, Alert, Spinner, Table, Badge, InputGroup } from 'react-bootstrap';
 import { User, Clock, Stethoscope, FileText, Search, Users, Filter, X } from 'lucide-react';
 
@@ -41,12 +41,28 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
 
     const [formData, setFormData] = useState({
         date: initialData?.date || '',
-        doctor: initialData?.doctor || '',
+        doctors: initialData?.doctors || (initialData?.doctor ? initialData.doctor.split(', ') : []),
         type: initialData?.type || '',
-        lieu: initialData?.lieu || '',
+        lieu: initialData?.lieu || initialData?.location || '',
         notes: initialData?.notes || '',
-        selectedEmployees: initialData?.selectedEmployees || [],
+        selectedEmployees: initialData?.selectedEmployees ||
+            (initialData?.employees?.map(e => typeof e === 'object' ? e.id : e)) ||
+            [],
     });
+
+    // Reset form when initialData changes (e.g., switching between different visits to edit)
+    useEffect(() => {
+        setFormData({
+            date: initialData?.date || '',
+            doctors: initialData?.doctors || (initialData?.doctor ? initialData.doctor.split(', ') : []),
+            type: initialData?.type || '',
+            lieu: initialData?.lieu || initialData?.location || '',
+            notes: initialData?.notes || '',
+            selectedEmployees: initialData?.selectedEmployees ||
+                (initialData?.employees?.map(e => typeof e === 'object' ? e.id : e)) ||
+                [],
+        });
+    }, [initialData]);
 
     const [filters, setFilters] = useState({
         search: '',
@@ -80,6 +96,19 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
         }
     };
 
+    const handleDoctorToggle = (docName) => {
+        setFormData(prev => {
+            const isSelected = prev.doctors.includes(docName);
+            const newSelection = isSelected
+                ? prev.doctors.filter(d => d !== docName)
+                : [...prev.doctors, docName];
+            return { ...prev, doctors: newSelection };
+        });
+        if (validationErrors.doctors) {
+            setValidationErrors(prev => ({ ...prev, doctors: '' }));
+        }
+    };
+
     const handleEmployeeToggle = (employeeId) => {
         setFormData(prev => {
             const isSelected = prev.selectedEmployees.includes(employeeId);
@@ -93,7 +122,7 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
     const validateForm = () => {
         const errors = {};
         if (!formData.date) errors.date = 'La date est requise';
-        if (!formData.doctor) errors.doctor = 'Le médecin est requis';
+        if (formData.doctors.length === 0) errors.doctors = 'Au moins un médecin est requis';
         if (!formData.type) errors.type = 'Le type de visite est requis';
         if (formData.selectedEmployees.length === 0) errors.selection = 'Veuillez sélectionner au moins un collaborateur';
         setValidationErrors(errors);
@@ -106,7 +135,13 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
         if (!validateForm()) return;
         try {
             setLoading(true);
-            await onSubmit(formData);
+            // Re-map doctors to doctor for backward compatibility if needed, 
+            // but the parent should handle doctors array now.
+            const submissionData = {
+                ...formData,
+                doctor: formData.doctors.join(', ')
+            };
+            await onSubmit(submissionData);
         } catch (err) {
             setError(err.response?.data?.message || "Une erreur est survenue");
         } finally {
@@ -155,6 +190,10 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
             overflow-y: auto;
             min-height: 0;
         }
+
+        .scrollbar-teal::-webkit-scrollbar { width: 4px; }
+        .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
 
         .sst-form-footer {
             padding: 1.25rem 1.5rem;
@@ -313,7 +352,7 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
                         <h5>{initialData ? 'Modifier Visite' : 'Programmer une visite'}</h5>
                     </div>
 
-                    <div className="sst-form-content">
+                    <div className="sst-form-content scrollbar-teal">
                         <div className="form-section-title">
                             <Clock size={14} /> Informations Générales
                         </div>
@@ -331,18 +370,26 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
                         </div>
 
                         <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">Médecin responsable</Form.Label>
-                            <Form.Select
-                                name="doctor"
-                                value={formData.doctor}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.doctor ? 'is-invalid' : ''}`}
-                            >
-                                <option value="">Sélectionner un médecin</option>
-                                <option value="Dr. Martin">Dr. Martin</option>
-                                <option value="Dr. Dupont">Dr. Dupont</option>
-                            </Form.Select>
-                            {validationErrors.doctor && <span className="error-message">{validationErrors.doctor}</span>}
+                            <Form.Label className="form-label-enhanced">Médecins responsables ({formData.doctors.length})</Form.Label>
+                            <div className="d-flex flex-wrap gap-2 p-3 bg-light rounded-3 border">
+                                {['Dr. Martin', 'Dr. Dupont', 'Dr. Leroy', 'Dr. Bernard'].map(doc => {
+                                    const isSelected = formData.doctors.includes(doc);
+                                    return (
+                                        <Badge
+                                            key={doc}
+                                            bg={isSelected ? 'light' : 'white'}
+                                            text={isSelected ? 'primary' : 'dark'}
+                                            className={`rounded-pill px-3 py-2 cursor-pointer border ${isSelected ? 'border-primary shadow-sm' : 'border-light'}`}
+                                            onClick={() => handleDoctorToggle(doc)}
+                                            style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                                        >
+                                            {doc}
+                                            {isSelected && <X size={14} className="ms-2" />}
+                                        </Badge>
+                                    );
+                                })}
+                            </div>
+                            {validationErrors.doctors && <span className="error-message">{validationErrors.doctors}</span>}
                         </div>
 
                         <div className="form-group-wrapper">
@@ -442,7 +489,7 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
                                     <span className="extra-small fw-bold text-muted uppercase">Disponibles</span>
                                     <Badge bg="secondary" className="extra-small">{filteredEmployees.filter(e => !formData.selectedEmployees.includes(e.id)).length}</Badge>
                                 </div>
-                                <div className="selection-box" style={{ minHeight: '450px' }}>
+                                <div className="selection-box scrollbar-teal" style={{ minHeight: '450px' }}>
                                     {filteredEmployees.filter(emp => !formData.selectedEmployees.includes(emp.id)).length > 0 ? (
                                         filteredEmployees.filter(emp => !formData.selectedEmployees.includes(emp.id)).map(emp => {
                                             const priority = getEmployeePriority(emp.lastVisitDate);
@@ -499,7 +546,7 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
                                     <Badge bg="primary" className="extra-small">{formData.selectedEmployees.length}</Badge>
                                 </div>
                                 <div
-                                    className="selection-box drop-zone"
+                                    className="selection-box drop-zone scrollbar-teal"
                                     style={{
                                         minHeight: '450px',
                                         backgroundColor: formData.selectedEmployees.length === 0 ? '#f8fafc' : 'white',

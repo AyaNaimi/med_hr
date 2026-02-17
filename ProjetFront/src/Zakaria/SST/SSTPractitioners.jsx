@@ -148,30 +148,55 @@ const SSTPractitioners = () => {
         setEditingPractitioner(null);
     };
 
+    const handleZoomImage = (imageUrl, title) => {
+        Swal.fire({
+            title: title,
+            imageUrl: imageUrl,
+            imageAlt: title,
+            showCloseButton: true,
+            showConfirmButton: false,
+            imageWidth: 400,
+            imageHeight: 400,
+            imageClass: 'rounded-4 object-fit-cover shadow-sm',
+            customClass: {
+                container: 'zoom-swal-container',
+                popup: 'rounded-4',
+                closeButton: 'zoom-close-btn'
+            },
+            width: 'auto',
+            padding: '2rem',
+        });
+    };
+
     const columns = [
         {
             key: 'practitioner',
             label: 'Praticien',
-            render: (item) => (
-                <div className="d-flex align-items-center gap-3">
-                    {item.photo ? (
-                        <img 
-                            src={typeof item.photo === 'string' ? item.photo : URL.createObjectURL(item.photo)} 
-                            alt={`${item.firstName} ${item.name}`}
-                            className="rounded-circle object-fit-cover"
-                            style={{ width: '38px', height: '38px' }}
-                        />
-                    ) : (
-                        <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '38px', height: '38px', backgroundColor: '#e6f4f4', color: '#2c767c' }}>
-                            {item.firstName[0]}{item.name[0]}
+            render: (item) => {
+                const imageUrl = item.photo ? (typeof item.photo === 'string' ? item.photo : URL.createObjectURL(item.photo)) : null;
+                const fullName = `Dr. ${item.firstName} ${item.name}`;
+                return (
+                    <div className="d-flex align-items-center gap-3">
+                        {imageUrl ? (
+                            <img
+                                src={imageUrl}
+                                alt={fullName}
+                                className="rounded-circle object-fit-cover practitioner-photo-zoom"
+                                style={{ width: '38px', height: '38px', cursor: 'pointer' }}
+                                onClick={() => handleZoomImage(imageUrl, fullName)}
+                            />
+                        ) : (
+                            <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '38px', height: '38px', backgroundColor: '#e6f4f4', color: '#2c767c' }}>
+                                {item.firstName[0]}{item.name[0]}
+                            </div>
+                        )}
+                        <div>
+                            <div className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>{fullName}</div>
+                            <div className="text-muted extra-small">{item.email}</div>
                         </div>
-                    )}
-                    <div>
-                        <div className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>Dr. {item.firstName} {item.name}</div>
-                        <div className="text-muted extra-small">{item.email}</div>
                     </div>
-                </div>
-            )
+                );
+            }
         },
         {
             key: 'type',
@@ -192,8 +217,8 @@ const SSTPractitioners = () => {
                 return (
                     <div className="d-flex flex-wrap gap-2">
                         {item.diplome && (
-                            <Button 
-                                variant="outline-info" 
+                            <Button
+                                variant="outline-info"
                                 size="sm"
                                 className="px-2 py-1 d-flex align-items-center gap-1"
                                 title="Voir le diplôme"
@@ -203,9 +228,9 @@ const SSTPractitioners = () => {
                             </Button>
                         )}
                         {otherDocs.map((doc, index) => (
-                            <Button 
+                            <Button
                                 key={index}
-                                variant="outline-secondary" 
+                                variant="outline-secondary"
                                 size="sm"
                                 className="px-2 py-1 d-flex align-items-center gap-1"
                                 title={`Document ${index + 1}`}
@@ -234,7 +259,7 @@ const SSTPractitioners = () => {
         <ThemeProvider theme={createTheme()}>
             <Box className="postionPage" sx={{ ...dynamicStyles }}>
                 <Box component="main" sx={{ flexGrow: 1, p: isMobile ? 1 : 0, mt: isMobile ? 8 : 10 }}>
-                    <div className={isMobile ? "d-block" : "d-flex h-100"} style={{ position: 'relative', minHeight: 'calc(100vh - 120px)' }}>
+                    <div className={isMobile ? "d-block" : "d-flex"} style={{ position: 'relative', height: isMobile ? 'auto' : 'calc(100vh - 180px)', width: '100%', padding: isMobile ? '0 10px' : '0 20px' }}>
                         <div style={{ flex: 1, padding: isMobile ? '12px' : '2rem' }}>
                             <div className="mt-4">
                                 <div className="section-header mb-4">
@@ -447,6 +472,28 @@ const SSTPractitioners = () => {
                 .btn-submit-dynamic {
                     background-color: #00afaa !important;
                     border: none !important;
+                }
+
+                .practitioner-photo-zoom {
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .practitioner-photo-zoom:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                }
+
+                .zoom-close-btn {
+                    color: #ff4757 !important;
+                    background: #fff !important;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+                    border-radius: 50% !important;
+                    transition: all 0.2s ease !important;
+                }
+
+                .zoom-close-btn:hover {
+                    background: #ff4757 !important;
+                    color: #fff !important;
                 }
                 `}
             </style>
