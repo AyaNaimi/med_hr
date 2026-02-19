@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Card, Tab, Tabs, Table, Modal, Form, Row, Col, Badge, Dropdown } from 'react-bootstrap';
 import { faEdit, faTrash, faFilePdf, faFileExcel, faPrint, faSliders, faChevronDown, faChevronUp, faSearch, faCalendarAlt, faClipboardCheck, faIdCard, faFilter, faClose, faGear, faCalendarWeek } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Trash2, Edit2, Plus, Check, X, Eye, FileText, ChevronRight, Activity, Heart, Scale, Stethoscope, AlertCircle, Download, User } from 'lucide-react';
+import { Trash2, Edit2, Plus, Check, X, Eye, FileText, ChevronRight, Activity, Heart, Scale, Stethoscope, AlertCircle, Download, User, Settings, Filter as FilterIcon } from 'lucide-react';
 import { FaPlus, FaPlusCircle } from "react-icons/fa";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Box } from "@mui/material";
@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GenericSidePanel from '../GenericSidePanel';
 import { useOpen } from "../../Acceuil/OpenProvider";
 import { useHeader } from "../../Acceuil/HeaderContext";
+// import PremiumFilters from '../Components/PremiumFilters';
 
 const SSTMedicalRecords = React.forwardRef(({
     departementId,
@@ -475,11 +476,14 @@ const SSTMedicalRecords = React.forwardRef(({
 
                                 <FontAwesomeIcon
                                     onClick={() => handleFiltersToggle ? handleFiltersToggle(!filtersVisible) : setLocalFiltersVisible(!localFiltersVisible)}
-                                    icon={filtersVisible ? faClose : faGear}
+                                    icon={filtersVisible ? faClose : faFilter}
+                                    color={filtersVisible ? 'green' : ''}
                                     style={{
                                         cursor: "pointer",
                                         fontSize: "1.9rem",
-                                        color: filtersVisible ? "#ff4757" : "#2c767c",
+                                        color: "#2c767c",
+                                        marginTop: "1.3%",
+                                        marginRight: "8px",
                                     }}
                                 />
 
@@ -493,40 +497,141 @@ const SSTMedicalRecords = React.forwardRef(({
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                className="filters-container mb-4"
+                                transition={{ duration: 0.3 }}
+                                className="filters-container"
                                 style={{
-                                    background: '#f8fafc',
-                                    padding: '20px',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e2e8f0'
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '12px',
+                                    padding: '16px 20px',
+                                    minHeight: 0
                                 }}
                             >
-                                <Row className="g-3">
-                                    <Col md={3}>
-                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Période du</Form.Label>
-                                        <Form.Control type="date" size="sm" value={mainFilters.startDate} onChange={e => setMainFilters({ ...mainFilters, startDate: e.target.value })} />
-                                    </Col>
-                                    <Col md={3}>
-                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Au</Form.Label>
-                                        <Form.Control type="date" size="sm" value={mainFilters.endDate} onChange={e => setMainFilters({ ...mainFilters, endDate: e.target.value })} />
-                                    </Col>
-                                    <Col md={3}>
-                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Service</Form.Label>
-                                        <Form.Select size="sm" value={mainFilters.dept} onChange={e => setMainFilters({ ...mainFilters, dept: e.target.value })}>
-                                            <option value="">Tous les services</option>
-                                            <option>Production</option>
-                                            <option>Logistique</option>
-                                        </Form.Select>
-                                    </Col>
-                                    <Col md={3}>
-                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Aptitude</Form.Label>
-                                        <Form.Select size="sm" value={mainFilters.status} onChange={e => setMainFilters({ ...mainFilters, status: e.target.value })}>
-                                            <option value="">Tous</option>
-                                            <option>Apte</option>
-                                            <option>Apte avec réserves</option>
-                                        </Form.Select>
-                                    </Col>
-                                </Row>
+                                {/* Ligne 1: Icône et titre */}
+                                <div className="filters-icon-section" style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    justifyContent: 'center',
+                                    marginLeft: '-8px',
+                                    marginRight: '14%',
+                                }}>
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="#4a90a4"
+                                        strokeWidth="2"
+                                        className="filters-icon"
+                                    >
+                                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                    </svg>
+                                    <span className="filters-title">Filtres</span>
+                                </div>
+
+                                {/* Ligne 2: Tous les filtres */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '1px',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center',
+                                    marginLeft: '10.2%'
+                                }}>
+                                    {[
+                                        {
+                                            key: 'startDate',
+                                            label: 'Du',
+                                            value: mainFilters.startDate,
+                                            type: 'date'
+                                        },
+                                        {
+                                            key: 'endDate',
+                                            label: 'Au',
+                                            value: mainFilters.endDate,
+                                            type: 'date'
+                                        },
+                                        {
+                                            key: 'dept',
+                                            label: 'Service',
+                                            value: mainFilters.dept,
+                                            type: 'select',
+                                            options: [
+                                                { label: 'Production', value: 'Production' },
+                                                { label: 'Logistique', value: 'Logistique' }
+                                            ],
+                                            placeholder: 'Tous les services'
+                                        },
+                                        {
+                                            key: 'status',
+                                            label: 'Aptitude',
+                                            value: mainFilters.status,
+                                            type: 'select',
+                                            options: [
+                                                { label: 'Apte', value: 'Apte' },
+                                                { label: 'Apte avec réserves', value: 'Apte avec réserves' }
+                                            ],
+                                            placeholder: 'Toutes les aptitudes'
+                                        }
+                                    ].map((filter, index) => (
+                                        <div key={index} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            margin: 0,
+                                            marginRight: '46px'
+                                        }}>
+                                            <label className="filter-label" style={{
+                                                fontSize: '0.9rem',
+                                                margin: 0,
+                                                marginRight: '-44px',
+                                                whiteSpace: 'nowrap',
+                                                minWidth: 'auto',
+                                                fontWeight: 600,
+                                                color: '#2c3e50'
+                                            }}>
+                                                {filter.label}
+                                            </label>
+
+                                            {filter.type === 'select' ? (
+                                                <select
+                                                    value={filter.value}
+                                                    onChange={(e) => setMainFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                    className="filter-input"
+                                                    style={{
+                                                        minWidth: 80,
+                                                        maxWidth: 110,
+                                                        height: 30,
+                                                        fontSize: '0.9rem',
+                                                        padding: '2px 6px',
+                                                        borderRadius: 6
+                                                    }}
+                                                >
+                                                    <option value="">{filter.placeholder}</option>
+                                                    {filter.options?.map((option, optIndex) => (
+                                                        <option key={optIndex} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    type="date"
+                                                    value={filter.value}
+                                                    onChange={(e) => setMainFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                    className="filter-input"
+                                                    style={{
+                                                        minWidth: 120,
+                                                        height: 30,
+                                                        fontSize: '0.9rem',
+                                                        padding: '2px 6px',
+                                                        borderRadius: 6
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Badge, Form, Row, Col } from 'react-bootstrap';
-import { User, Mail, Phone, Stethoscope, Briefcase, PlusCircle, UserPlus, FileText, Filter } from 'lucide-react';
+import { User, Mail, Phone, Stethoscope, Briefcase, PlusCircle, UserPlus, FileText, Filter as FilterIcon, X, Settings } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faClose, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,7 @@ import SSTPractitionerForm from './SSTPractitionerForm';
 import Swal from "sweetalert2";
 import { FaPlusCircle } from "react-icons/fa";
 import "../Style.css";
+// import PremiumFilters from '../Components/PremiumFilters';
 
 const SSTPractitioners = () => {
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
@@ -283,12 +284,14 @@ const SSTPractitioners = () => {
                                         <div className="d-flex align-items-center">
                                             <FontAwesomeIcon
                                                 onClick={() => setFiltersVisible(!filtersVisible)}
-                                                icon={filtersVisible ? faClose : faGear}
+                                                icon={filtersVisible ? faClose : faFilter}
+                                                color={filtersVisible ? 'green' : ''}
                                                 style={{
                                                     cursor: "pointer",
                                                     fontSize: "1.9rem",
-                                                    color: filtersVisible ? "#ff4757" : "#2c767c",
-                                                    marginRight: "15px",
+                                                    color: "#2c767c",
+                                                    marginTop: "1.3%",
+                                                    marginRight: "8px",
                                                 }}
                                                 title="Filtres praticiens"
                                             />
@@ -311,59 +314,125 @@ const SSTPractitioners = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -20 }}
                                             transition={{ duration: 0.3 }}
-                                            className="filters-container mb-4"
+                                            className="filters-container"
                                             style={{
-                                                background: '#f8fafc',
-                                                padding: '20px',
-                                                borderRadius: '12px',
-                                                border: '1px solid #e2e8f0',
-                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '12px',
+                                                padding: '16px 20px',
+                                                minHeight: 0
                                             }}
                                         >
-                                            <div className="d-flex align-items-center gap-2 mb-3 border-bottom pb-2">
-                                                <FontAwesomeIcon icon={faFilter} className="text-primary" />
-                                                <span className="fw-bold text-dark">Filtres de recherche</span>
+                                            {/* Ligne 1: Icône et titre */}
+                                            <div className="filters-icon-section" style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                justifyContent: 'center',
+                                                marginLeft: '-8px',
+                                                marginRight: '14%',
+                                            }}>
+                                                <svg
+                                                    width="20"
+                                                    height="20"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="#4a90a4"
+                                                    strokeWidth="2"
+                                                    className="filters-icon"
+                                                >
+                                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                                </svg>
+                                                <span className="filters-title">Filtres</span>
                                             </div>
-                                            <Row className="g-3">
-                                                <Col md={4}>
-                                                    <Form.Label className="extra-small fw-bold text-muted uppercase">Type</Form.Label>
-                                                    <Form.Select
-                                                        size="sm"
-                                                        value={practitionerFilters.type}
-                                                        onChange={e => setPractitionerFilters({ ...practitionerFilters, type: e.target.value })}
-                                                    >
-                                                        <option value="">Tous les types</option>
-                                                        <option value="Employé">Employé</option>
-                                                        <option value="Externe">Externe</option>
-                                                    </Form.Select>
-                                                </Col>
-                                                <Col md={4}>
-                                                    <Form.Label className="extra-small fw-bold text-muted uppercase">Spécialité</Form.Label>
-                                                    <Form.Select
-                                                        size="sm"
-                                                        value={practitionerFilters.specialty}
-                                                        onChange={e => setPractitionerFilters({ ...practitionerFilters, specialty: e.target.value })}
-                                                    >
-                                                        <option value="">Toutes les spécialités</option>
-                                                        <option>Généraliste</option>
-                                                        <option>Travail</option>
-                                                        <option>Cardiologue</option>
-                                                    </Form.Select>
-                                                </Col>
-                                                <Col md={4}>
-                                                    <Form.Label className="extra-small fw-bold text-muted uppercase">Statut</Form.Label>
-                                                    <Form.Select
-                                                        size="sm"
-                                                        value={practitionerFilters.status}
-                                                        onChange={e => setPractitionerFilters({ ...practitionerFilters, status: e.target.value })}
-                                                    >
-                                                        <option value="">Tous les statuts</option>
-                                                        <option>Actif</option>
-                                                        <option>Inactif</option>
-                                                        <option>En attente</option>
-                                                    </Form.Select>
-                                                </Col>
-                                            </Row>
+
+                                            {/* Ligne 2: Tous les filtres */}
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '1px',
+                                                flexWrap: 'wrap',
+                                                justifyContent: 'center',
+                                                marginLeft: '10.2%'
+                                            }}>
+                                                {[
+                                                    {
+                                                        key: 'type',
+                                                        label: 'Type',
+                                                        value: practitionerFilters.type,
+                                                        type: 'select',
+                                                        options: [
+                                                            { label: 'Employé', value: 'Employé' },
+                                                            { label: 'Externe', value: 'Externe' }
+                                                        ],
+                                                        placeholder: 'Tous les types'
+                                                    },
+                                                    {
+                                                        key: 'specialty',
+                                                        label: 'Spécialité',
+                                                        value: practitionerFilters.specialty,
+                                                        type: 'select',
+                                                        options: [
+                                                            { label: 'Généraliste', value: 'Généraliste' },
+                                                            { label: 'Travail', value: 'Travail' },
+                                                            { label: 'Cardiologue', value: 'Cardiologue' }
+                                                        ],
+                                                        placeholder: 'Toutes les spécialités'
+                                                    },
+                                                    {
+                                                        key: 'status',
+                                                        label: 'Statut',
+                                                        value: practitionerFilters.status,
+                                                        type: 'select',
+                                                        options: [
+                                                            { label: 'Actif', value: 'Actif' },
+                                                            { label: 'Inactif', value: 'Inactif' },
+                                                            { label: 'En attente', value: 'En attente' }
+                                                        ],
+                                                        placeholder: 'Tous les statuts'
+                                                    }
+                                                ].map((filter, index) => (
+                                                    <div key={index} style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        margin: 0,
+                                                        marginRight: '46px'
+                                                    }}>
+                                                        <label className="filter-label" style={{
+                                                            fontSize: '0.9rem',
+                                                            margin: 0,
+                                                            marginRight: '-44px',
+                                                            whiteSpace: 'nowrap',
+                                                            minWidth: 'auto',
+                                                            fontWeight: 600,
+                                                            color: '#2c3e50'
+                                                        }}>
+                                                            {filter.label}
+                                                        </label>
+
+                                                        <select
+                                                            value={filter.value}
+                                                            onChange={(e) => setPractitionerFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                            className="filter-input"
+                                                            style={{
+                                                                minWidth: 80,
+                                                                maxWidth: 110,
+                                                                height: 30,
+                                                                fontSize: '0.9rem',
+                                                                padding: '2px 6px',
+                                                                borderRadius: 6
+                                                            }}
+                                                        >
+                                                            <option value="">{filter.placeholder}</option>
+                                                            {filter.options?.map((option, optIndex) => (
+                                                                <option key={optIndex} value={option.value}>
+                                                                    {option.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>

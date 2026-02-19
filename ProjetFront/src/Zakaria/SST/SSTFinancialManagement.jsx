@@ -8,7 +8,9 @@ import {
     FileText,
     Building2,
     Calendar,
+    Plus,
     Upload,
+    Filter as FilterIcon
 } from 'lucide-react';
 import { useHeader } from "../../Acceuil/HeaderContext";
 import { useOpen } from "../../Acceuil/OpenProvider";
@@ -21,6 +23,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { motion, AnimatePresence } from 'framer-motion';
 import ExpandRTable from '../Employe/ExpandRTable';
 import GenericSidePanel from '../GenericSidePanel';
+// PremiumFilters has been removed to use inlined filter logic for consistency
 import "../Style.css";
 
 const SSTFinancialManagement = () => {
@@ -273,19 +276,20 @@ const SSTFinancialManagement = () => {
                                         <p className="section-description text-muted mb-0">Aperçu simplifié des coûts et contrats</p>
                                     </div>
                                     <div className="d-flex gap-2">
-                                        <div
-                                            className="filter-icon-btn shadow-sm d-flex align-items-center justify-content-center bg-white border cursor-pointer rounded-3"
+                                        <FontAwesomeIcon
                                             onClick={() => setFiltersVisible(!filtersVisible)}
+                                            icon={filtersVisible ? faClose : faFilter}
+                                            color={filtersVisible ? 'green' : ''}
                                             style={{
-                                                width: '45px',
-                                                height: '45px',
-                                                color: filtersVisible ? '#ff4757' : '#3a8a90',
-                                                borderColor: filtersVisible ? '#ff4757' : '#eef2f6'
+                                                cursor: "pointer",
+                                                fontSize: "1.9rem",
+                                                color: "#2c767c",
+                                                marginTop: "1.3%",
+                                                marginRight: "8px",
                                             }}
-                                        >
-                                            <FontAwesomeIcon icon={filtersVisible ? faClose : faFilter} />
-                                        </div>
-                                        
+                                            title="Filtres"
+                                        />
+
                                         <Button variant="outline-secondary" className="bg-white rounded-3 d-flex align-items-center" style={{ height: '45px' }}>
                                             <Download size={18} className="me-2" /> <span>Exporter</span>
                                         </Button>
@@ -296,102 +300,116 @@ const SSTFinancialManagement = () => {
                             <AnimatePresence>
                                 {filtersVisible && (
                                     <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="p-3 bg-white rounded-4 shadow-sm mb-4 border"
-                                        style={{ overflow: 'hidden' }}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="filters-container mb-4"
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '1px',
+                                            backgroundColor: '#f8fafc',
+                                            
+                                            borderRadius: '12px',
+                                            border: '1px solid #eef2f6'
+                                        }}
                                     >
-                                        <Row className="g-3">
-                                            {activeTab === 'doctors' ? (
-                                                <Row className="g-3">
-                                                    <Col md={6}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Type de Contrat</Form.Label>
-                                                        <Form.Select
-                                                            size="sm"
-                                                            className="rounded-3"
-                                                            value={filters.contractType}
-                                                            onChange={e => setFilters({ ...filters, contractType: e.target.value })}
+                                        <div style={{
+                                            display: 'flex',
+                                            gap: '8px',
+                                            marginBottom: '8px'
+                                        }}>
+                                            <FilterIcon size={18} color="#3a8a90" />
+                                            <span style={{ fontWeight: 600, color: '#334155' }}>Filtres</span>
+                                        </div>
+
+                                        <div style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '24px'
+                                        }}>
+                                            {(activeTab === 'doctors' ? [
+                                                {
+                                                    key: 'contractType',
+                                                    label: 'Contrat',
+                                                    value: filters.contractType,
+                                                    type: 'select',
+                                                    options: [
+                                                        { label: 'CDI', value: 'CDI' },
+                                                        { label: 'Prestation', value: 'Prestation' }
+                                                    ],
+                                                    placeholder: 'Tous les contrats'
+                                                },
+                                                {
+                                                    key: 'department',
+                                                    label: 'Département',
+                                                    value: filters.department,
+                                                    type: 'select',
+                                                    options: Array.from(new Set(doctors.map(d => d.service))).map(s => ({ label: s, value: s })),
+                                                    placeholder: 'Tous les départements'
+                                                }
+                                            ] : [
+                                                {
+                                                    key: 'startDate',
+                                                    label: 'Du',
+                                                    value: filters.startDate,
+                                                    type: 'date'
+                                                },
+                                                {
+                                                    key: 'endDate',
+                                                    label: 'Au',
+                                                    value: filters.endDate,
+                                                    type: 'date'
+                                                },
+                                                {
+                                                    key: 'doctor',
+                                                    label: 'Médecin',
+                                                    value: filters.doctor,
+                                                    type: 'select',
+                                                    options: Array.from(new Set(visitCosts.map(v => v.doctor))).map(d => ({ label: d, value: d })),
+                                                    placeholder: 'Tous les médecins'
+                                                },
+                                                {
+                                                    key: 'status',
+                                                    label: 'Statut',
+                                                    value: filters.status,
+                                                    type: 'select',
+                                                    options: [
+                                                        { label: 'Payé', value: 'Payé' },
+                                                        { label: 'Validé', value: 'Validé' },
+                                                        { label: 'En attente', value: 'En attente' }
+                                                    ],
+                                                    placeholder: 'Tous les statuts'
+                                                }
+                                            ]).map((filter, idx) => (
+                                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <label style={{ fontSize: '0.85rem', fontWeight: 500, color: '#64748b', whiteSpace: 'nowrap' }}>
+                                                        {filter.label}
+                                                    </label>
+                                                    {filter.type === 'select' ? (
+                                                        <select
+                                                            className="form-select form-select-sm"
+                                                            style={{ width: '150px', borderRadius: '8px' }}
+                                                            value={filter.value}
+                                                            onChange={(e) => setFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
                                                         >
-                                                            <option value="">Tous les contrats</option>
-                                                            <option value="CDI">CDI</option>
-                                                            <option value="Prestation">Prestation</option>
-                                                        </Form.Select>
-                                                    </Col>
-                                                    <Col md={6}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Département</Form.Label>
-                                                        <Form.Select
-                                                            size="sm"
-                                                            className="rounded-3"
-                                                            value={filters.department}
-                                                            onChange={e => setFilters({ ...filters, department: e.target.value })}
-                                                        >
-                                                            <option value="">Tous les départements</option>
-                                                            {Array.from(new Set(doctors.map(d => d.service))).map(s => <option key={s} value={s}>{s}</option>)}
-                                                        </Form.Select>
-                                                    </Col>
-                                                </Row>
-                                            ) : (
-                                                <>
-                                                    <Col md={3}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Du</Form.Label>
-                                                        <Form.Control
-                                                            type="date"
-                                                            size="sm"
-                                                            className="rounded-3"
-                                                            value={filters.startDate}
-                                                            onChange={e => setFilters({ ...filters, startDate: e.target.value })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={3}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Au</Form.Label>
-                                                        <Form.Control
-                                                            type="date"
-                                                            size="sm"
-                                                            className="rounded-3"
-                                                            value={filters.endDate}
-                                                            onChange={e => setFilters({ ...filters, endDate: e.target.value })}
-                                                        />
-                                                    </Col>
-                                                    <Col md={3}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Médecin</Form.Label>
-                                                        <Form.Select
-                                                            size="sm"
-                                                            className="rounded-3"
-                                                            value={filters.doctor}
-                                                            onChange={e => setFilters({ ...filters, doctor: e.target.value })}
-                                                        >
-                                                            <option value="">Tous les médecins</option>
-                                                            {Array.from(new Set(visitCosts.map(v => v.doctor))).map(d => (
-                                                                <option key={d} value={d}>{d}</option>
+                                                            <option value="">{filter.placeholder}</option>
+                                                            {filter.options?.map((opt, oIdx) => (
+                                                                <option key={oIdx} value={opt.value}>{opt.label}</option>
                                                             ))}
-                                                        </Form.Select>
-                                                    </Col>
-                                                    <Col md={3}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Statut</Form.Label>
-                                                        <Form.Select
-                                                            size="sm"
-                                                            className="rounded-3"
-                                                            value={filters.status}
-                                                            onChange={e => setFilters({ ...filters, status: e.target.value })}
-                                                        >
-                                                            <option value="">Tous les statuts</option>
-                                                            <option value="Payé">Payé</option>
-                                                            <option value="Validé">Validé</option>
-                                                            <option value="En attente">En attente</option>
-                                                        </Form.Select>
-                                                    </Col>
-                                                </>
-                                            )}
-                                        </Row>
-                                        <div className="d-flex justify-content-end mt-3 border-top pt-2">
-                                            <Button
-                                                variant="link"
-                                                className="text-muted extra-small p-0 fw-bold text-decoration-none"
-                                                onClick={() => setFilters({ startDate: '', endDate: '', doctor: '', status: '', contractType: '', department: '' })}
-                                            >
-                                                Réinitialiser les filtres
-                                            </Button>
+                                                        </select>
+                                                    ) : (
+                                                        <input
+                                                            type="date"
+                                                            className="form-control form-control-sm"
+                                                            style={{ width: '130px', borderRadius: '8px' }}
+                                                            value={filter.value}
+                                                            onChange={(e) => setFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     </motion.div>
                                 )}

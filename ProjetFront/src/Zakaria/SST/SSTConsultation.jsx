@@ -35,7 +35,9 @@ import {
     ExternalLink,
     Trash2,
     Calendar,
-    Users
+    Users,
+    Settings,
+    Filter as FilterIcon
 } from 'lucide-react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faClose, faFilter, faCalendarWeek } from "@fortawesome/free-solid-svg-icons";
@@ -46,6 +48,7 @@ import Swal from 'sweetalert2';
 import { useHeader } from "../../Acceuil/HeaderContext";
 import { useOpen } from "../../Acceuil/OpenProvider";
 import "../Style.css";
+// import PremiumFilters from '../Components/PremiumFilters';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import ExpandRTable from '../Employe/ExpandRTable';
@@ -461,64 +464,64 @@ const SSTConsultation = () => {
                                             <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
                                             SESSIONS DE VISITE
                                         </h6>
-                                        <div
-                                            className="filter-icon-btn shadow-sm"
-                                            onClick={() => setSidebarFiltersVisible(!sidebarFiltersVisible)}
-                                        >
-                                            <FontAwesomeIcon icon={sidebarFiltersVisible ? faClose : faGear} size="sm" />
+                                        <div className="d-flex align-items-center">
+                                            <FontAwesomeIcon
+                                                onClick={() => setSidebarFiltersVisible(!sidebarFiltersVisible)}
+                                                icon={sidebarFiltersVisible ? faClose : faFilter}
+                                                color={sidebarFiltersVisible ? 'green' : ''}
+                                                style={{
+                                                    cursor: "pointer",
+                                                    fontSize: "1.9rem",
+                                                    color: "#2c767c",
+                                                    marginTop: "1.3%",
+                                                    marginRight: "8px",
+                                                }}
+                                            />
                                         </div>
                                     </div>
 
                                     <AnimatePresence>
                                         {sidebarFiltersVisible && (
                                             <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                className="filter-panel mb-3 p-3 bg-light rounded-3 border"
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="bg-white border rounded-3 p-2 mb-3 shadow-sm mx-2"
                                             >
                                                 <div className="d-flex flex-column gap-2">
-                                                    <Form.Label className="extra-small fw-bold text-muted mb-0">SERVICE / DÉPT</Form.Label>
-                                                    <Form.Select
-                                                        size="sm"
-                                                        value={sidebarFilterDept}
-                                                        onChange={(e) => setSidebarFilterDept(e.target.value)}
-                                                        className="rounded-3 extra-small border-0 shadow-sm"
-                                                    >
-                                                        <option value="">Tous les services</option>
-                                                        {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                                                    </Form.Select>
-
-                                                    <Form.Label className="extra-small fw-bold text-muted mb-0 mt-2">DÉBUT</Form.Label>
-                                                    <Form.Control
-                                                        type="date"
-                                                        size="sm"
-                                                        value={sidebarFilterDateStart}
-                                                        onChange={(e) => setSidebarFilterDateStart(e.target.value)}
-                                                        className="rounded-3 extra-small border-0 shadow-sm"
-                                                    />
-
-                                                    <Form.Label className="extra-small fw-bold text-muted mb-0 mt-2">FIN</Form.Label>
-                                                    <Form.Control
-                                                        type="date"
-                                                        size="sm"
-                                                        value={sidebarFilterDateEnd}
-                                                        onChange={(e) => setSidebarFilterDateEnd(e.target.value)}
-                                                        className="rounded-3 extra-small border-0 shadow-sm"
-                                                    />
-
-                                                    <Form.Label className="extra-small fw-bold text-muted mb-0 mt-2">STATUT</Form.Label>
-                                                    <Form.Select
-                                                        size="sm"
-                                                        value={sidebarFilterStatus}
-                                                        onChange={(e) => setSidebarFilterStatus(e.target.value)}
-                                                        className="rounded-3 extra-small border-0 shadow-sm"
-                                                    >
-                                                        <option value="">Tous les statuts</option>
-                                                        <option value="Planned">Planifiée</option>
-                                                        <option value="InProgress">En cours</option>
-                                                        <option value="Completed">Terminée</option>
-                                                    </Form.Select>
+                                                    {[
+                                                        { label: 'Dépt', value: sidebarFilterDept, key: 'dept', type: 'select', options: departments.map(d => ({ label: d, value: d })) },
+                                                        { label: 'Début', value: sidebarFilterDateStart, key: 'start', type: 'date' },
+                                                        { label: 'Fin', value: sidebarFilterDateEnd, key: 'end', type: 'date' },
+                                                        { label: 'Statut', value: sidebarFilterStatus, key: 'status', type: 'select', options: [{ label: 'Planifiée', value: 'Planned' }, { label: 'En cours', value: 'InProgress' }, { label: 'Terminée', value: 'Completed' }] }
+                                                    ].map((f, i) => (
+                                                        <div key={i} className="d-flex align-items-center gap-2">
+                                                            <label className="extra-small fw-black text-muted mb-0" style={{ width: '40px' }}>{f.label}</label>
+                                                            {f.type === 'select' ? (
+                                                                <select
+                                                                    className="form-select form-select-sm extra-small"
+                                                                    value={f.value}
+                                                                    onChange={e => {
+                                                                        if (f.key === 'dept') setSidebarFilterDept(e.target.value);
+                                                                        if (f.key === 'status') setSidebarFilterStatus(e.target.value);
+                                                                    }}
+                                                                >
+                                                                    <option value="">Tous</option>
+                                                                    {f.options.map((o, j) => <option key={j} value={o.value}>{o.label}</option>)}
+                                                                </select>
+                                                            ) : (
+                                                                <input
+                                                                    type="date"
+                                                                    className="form-control form-control-sm extra-small"
+                                                                    value={f.value}
+                                                                    onChange={e => {
+                                                                        if (f.key === 'start') setSidebarFilterDateStart(e.target.value);
+                                                                        if (f.key === 'end') setSidebarFilterDateEnd(e.target.value);
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </motion.div>
                                         )}
@@ -575,13 +578,18 @@ const SSTConsultation = () => {
                                             </p>
                                         </div>
                                         <div className="d-flex gap-2">
-                                            <div
-                                                className="filter-icon-btn shadow-sm"
+                                            <FontAwesomeIcon
                                                 onClick={() => setTableFiltersVisible(!tableFiltersVisible)}
-                                                style={{ border: tableFiltersVisible ? '1px solid #ff4757' : '1px solid #eee', color: tableFiltersVisible ? '#ff4757' : '#3a8a90' }}
-                                            >
-                                                <FontAwesomeIcon icon={tableFiltersVisible ? faClose : faFilter} />
-                                            </div>
+                                                icon={tableFiltersVisible ? faClose : faFilter}
+                                                color={tableFiltersVisible ? 'green' : ''}
+                                                style={{
+                                                    cursor: "pointer",
+                                                    fontSize: "1.9rem",
+                                                    color: "#2c767c",
+                                                    marginTop: "1.3%",
+                                                    marginRight: "8px",
+                                                }}
+                                            />
 
                                         </div>
                                     </div>
@@ -589,25 +597,88 @@ const SSTConsultation = () => {
                                     <AnimatePresence>
                                         {tableFiltersVisible && (
                                             <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                className="p-3 bg-light rounded-3 mb-3"
+                                                initial={{ opacity: 0, y: -20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -20 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="filters-container mb-4"
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '12px',
+                                                    padding: '16px 20px',
+                                                    minHeight: 0
+                                                }}
                                             >
-                                                <Row className="g-3">
-                                                    <Col md={4}>
-                                                        <Form.Label className="extra-small fw-bold text-muted uppercase">Service / Département</Form.Label>
-                                                        <Form.Select
-                                                            size="sm"
+                                                {/* Ligne 1: Icône et titre */}
+                                                <div className="filters-icon-section" style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    justifyContent: 'center',
+                                                    marginLeft: '-8px',
+                                                    marginRight: '14%',
+                                                }}>
+                                                    <svg
+                                                        width="20"
+                                                        height="20"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="#4a90a4"
+                                                        strokeWidth="2"
+                                                        className="filters-icon"
+                                                    >
+                                                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                                    </svg>
+                                                    <span className="filters-title">Filtres Table</span>
+                                                </div>
+
+                                                {/* Ligne 2: Tous les filtres */}
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '1px',
+                                                    flexWrap: 'wrap',
+                                                    justifyContent: 'center',
+                                                    marginLeft: '10.2%'
+                                                }}>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        margin: 0,
+                                                        marginRight: '46px'
+                                                    }}>
+                                                        <label className="filter-label" style={{
+                                                            fontSize: '0.9rem',
+                                                            margin: 0,
+                                                            marginRight: '-44px',
+                                                            whiteSpace: 'nowrap',
+                                                            minWidth: 'auto',
+                                                            fontWeight: 600,
+                                                            color: '#2c3e50'
+                                                        }}>
+                                                            Service
+                                                        </label>
+
+                                                        <select
                                                             value={filterDept}
                                                             onChange={(e) => setFilterDept(e.target.value)}
-                                                            className="rounded-3"
+                                                            className="filter-input"
+                                                            style={{
+                                                                minWidth: 150,
+                                                                height: 30,
+                                                                fontSize: '0.9rem',
+                                                                padding: '2px 6px',
+                                                                borderRadius: 6
+                                                            }}
                                                         >
                                                             <option value="">Tous les services</option>
-                                                            {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                                                        </Form.Select>
-                                                    </Col>
-                                                </Row>
+                                                            {departments.map((d, i) => (
+                                                                <option key={i} value={d}>{d}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>

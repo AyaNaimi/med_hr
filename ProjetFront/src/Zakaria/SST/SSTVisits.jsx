@@ -23,7 +23,9 @@ import {
     Search as SearchIcon,
     History,
     CalendarDays,
-    Activity
+    Activity,
+    X,
+    Settings
 } from 'lucide-react';
 import {
     faFilter,
@@ -46,6 +48,7 @@ import ExpandRTable from '../Employe/ExpandRTable';
 import Swal from "sweetalert2";
 import { FaPlusCircle } from "react-icons/fa";
 import "../Style.css";
+// import PremiumFilters from '../Components/PremiumFilters';
 
 const SSTVisits = () => {
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
@@ -683,13 +686,19 @@ const SSTVisits = () => {
                                     </p>
                                 </div>
                                 <div className="d-flex align-items-center gap-3">
-                                    <div
-                                        className="filter-icon-btn shadow-sm"
+                                    <FontAwesomeIcon
                                         onClick={() => setFiltersVisible(!filtersVisible)}
-                                        style={{ border: filtersVisible ? '1px solid #ff4757' : '1px solid #eee', color: filtersVisible ? '#ff4757' : '#3a8a90' }}
-                                    >
-                                        <FontAwesomeIcon icon={filtersVisible ? faClose : faGear} />
-                                    </div>
+                                        icon={filtersVisible ? faClose : faFilter}
+                                        color={filtersVisible ? 'green' : ''}
+                                        style={{
+                                            cursor: "pointer",
+                                            fontSize: "1.9rem",
+                                            color: "#2c767c",
+                                            marginTop: "1.3%",
+                                            marginRight: "8px",
+                                        }}
+                                        title="Filtres visites"
+                                    />
                                     <Button
                                         onClick={() => { setEditingVisit(null); setShowForm(true); }}
                                         className="btn-primary-teal d-flex align-items-center rounded-3 border-0 py-2 px-4 shadow-sm"
@@ -715,63 +724,147 @@ const SSTVisits = () => {
                             <AnimatePresence>
                                 {filtersVisible && (
                                     <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="p-3 bg-light rounded-3 mb-4 border"
-                                        style={{ overflow: 'hidden' }}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="filters-container"
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '12px',
+                                            padding: '16px 20px',
+                                            minHeight: 0
+                                        }}
                                     >
-                                        <Row className="g-3">
-                                            <Col md={3}>
-                                                <Form.Label className="extra-small fw-bold text-muted uppercase">Période du</Form.Label>
-                                                <Form.Control
-                                                    type="date"
-                                                    size="sm"
-                                                    className="rounded-3"
-                                                    value={visitFilters.startDate}
-                                                    onChange={e => setVisitFilters({ ...visitFilters, startDate: e.target.value })}
-                                                />
-                                            </Col>
-                                            <Col md={3}>
-                                                <Form.Label className="extra-small fw-bold text-muted uppercase">Au</Form.Label>
-                                                <Form.Control
-                                                    type="date"
-                                                    size="sm"
-                                                    className="rounded-3"
-                                                    value={visitFilters.endDate}
-                                                    onChange={e => setVisitFilters({ ...visitFilters, endDate: e.target.value })}
-                                                />
-                                            </Col>
-                                            <Col md={3}>
-                                                <Form.Label className="extra-small fw-bold text-muted uppercase">Médecin</Form.Label>
-                                                <Form.Select
-                                                    size="sm"
-                                                    className="rounded-3"
-                                                    value={visitFilters.doctor}
-                                                    onChange={e => setVisitFilters({ ...visitFilters, doctor: e.target.value })}
-                                                >
-                                                    <option value="">Tous les médecins</option>
-                                                    <option>Dr. Martin</option>
-                                                    <option>Dr. Dupont</option>
-                                                    <option>Dr. Leroy</option>
-                                                    <option>Dr. Bernard</option>
-                                                </Form.Select>
-                                            </Col>
-                                            <Col md={3}>
-                                                <Form.Label className="extra-small fw-bold text-muted uppercase">Statut</Form.Label>
-                                                <Form.Select
-                                                    size="sm"
-                                                    className="rounded-3"
-                                                    value={visitFilters.status}
-                                                    onChange={e => setVisitFilters({ ...visitFilters, status: e.target.value })}
-                                                >
-                                                    <option value="">Tous les statuts</option>
-                                                    <option value="planifiée">Planifiée</option>
-                                                    <option value="en_cours">En cours</option>
-                                                    <option value="terminée">Terminée</option>
-                                                </Form.Select>
-                                            </Col>
-                                        </Row>
+                                        {/* Ligne 1: Icône et titre */}
+                                        <div className="filters-icon-section" style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            justifyContent: 'center',
+                                            marginLeft: '-8px',
+                                            marginRight: '14%',
+                                        }}>
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#4a90a4"
+                                                strokeWidth="2"
+                                                className="filters-icon"
+                                            >
+                                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                            </svg>
+                                            <span className="filters-title">Filtres</span>
+                                        </div>
+
+                                        {/* Ligne 2: Tous les filtres */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '1px',
+                                            flexWrap: 'wrap',
+                                            justifyContent: 'center',
+                                            marginLeft: '10.2%'
+                                        }}>
+                                            {[
+                                                {
+                                                    key: 'startDate',
+                                                    label: 'Du',
+                                                    value: visitFilters.startDate,
+                                                    type: 'date'
+                                                },
+                                                {
+                                                    key: 'endDate',
+                                                    label: 'Au',
+                                                    value: visitFilters.endDate,
+                                                    type: 'date'
+                                                },
+                                                {
+                                                    key: 'doctor',
+                                                    label: 'Médecin',
+                                                    value: visitFilters.doctor,
+                                                    type: 'select',
+                                                    options: [
+                                                        { label: 'Dr. Martin', value: 'Dr. Martin' },
+                                                        { label: 'Dr. Dupont', value: 'Dr. Dupont' },
+                                                        { label: 'Dr. Leroy', value: 'Dr. Leroy' },
+                                                        { label: 'Dr. Bernard', value: 'Dr. Bernard' }
+                                                    ],
+                                                    placeholder: 'Tous les médecins'
+                                                },
+                                                {
+                                                    key: 'status',
+                                                    label: 'Statut',
+                                                    value: visitFilters.status,
+                                                    type: 'select',
+                                                    options: [
+                                                        { label: 'Planifiée', value: 'planifiée' },
+                                                        { label: 'En cours', value: 'en_cours' },
+                                                        { label: 'Terminée', value: 'terminée' }
+                                                    ],
+                                                    placeholder: 'Tous les statuts'
+                                                }
+                                            ].map((filter, index) => (
+                                                <div key={index} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    margin: 0,
+                                                    marginRight: '46px'
+                                                }}>
+                                                    <label className="filter-label" style={{
+                                                        fontSize: '0.9rem',
+                                                        margin: 0,
+                                                        marginRight: '-44px',
+                                                        whiteSpace: 'nowrap',
+                                                        minWidth: 'auto',
+                                                        fontWeight: 600,
+                                                        color: '#2c3e50'
+                                                    }}>
+                                                        {filter.label}
+                                                    </label>
+
+                                                    {filter.type === 'select' ? (
+                                                        <select
+                                                            value={filter.value}
+                                                            onChange={(e) => setVisitFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                            className="filter-input"
+                                                            style={{
+                                                                minWidth: 80,
+                                                                maxWidth: 110,
+                                                                height: 30,
+                                                                fontSize: '0.9rem',
+                                                                padding: '2px 6px',
+                                                                borderRadius: 6
+                                                            }}
+                                                        >
+                                                            <option value="">{filter.placeholder}</option>
+                                                            {filter.options?.map((option, optIndex) => (
+                                                                <option key={optIndex} value={option.value}>
+                                                                    {option.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <input
+                                                            type="date"
+                                                            value={filter.value}
+                                                            onChange={(e) => setVisitFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                            className="filter-input"
+                                                            style={{
+                                                                minWidth: 120,
+                                                                height: 30,
+                                                                fontSize: '0.9rem',
+                                                                padding: '2px 6px',
+                                                                borderRadius: 6
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>

@@ -12,9 +12,14 @@ import {
     Search,
     Clock,
     User,
-    Stethoscope
+    Stethoscope,
+    Filter as FilterIcon
 } from 'lucide-react';
 import GenericSidePanel from '../GenericSidePanel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear, faClose, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { motion, AnimatePresence } from 'framer-motion';
+// import PremiumFilters from '../Components/PremiumFilters';
 import SSTCostForm from './SSTCostForm';
 import ExpandRTable from '../Employe/ExpandRTable';
 import {
@@ -86,6 +91,11 @@ const SSTCosts = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [selectedItems, setSelectedItems] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
+    const [filtersVisible, setFiltersVisible] = useState(false);
+    const [filters, setFilters] = useState({
+        department: '',
+        status: ''
+    });
 
     useEffect(() => {
         setTitle("Gestion des Coûts SST");
@@ -95,17 +105,26 @@ const SSTCosts = () => {
     }, [setTitle, clearActions]);
 
     useEffect(() => {
+        let filtered = sstCostsData;
+
         if (searchQuery) {
-            const filtered = sstCostsData.filter(item =>
+            filtered = filtered.filter(item =>
                 item.employee.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.department.toLowerCase().includes(searchQuery.toLowerCase())
             );
-            setFilteredData(filtered);
-        } else {
-            setFilteredData(sstCostsData);
         }
-    }, [searchQuery, sstCostsData]);
+
+        if (filters.department) {
+            filtered = filtered.filter(item => item.department === filters.department);
+        }
+
+        if (filters.status) {
+            filtered = filtered.filter(item => item.status === filters.status);
+        }
+
+        setFilteredData(filtered);
+    }, [searchQuery, sstCostsData, filters]);
 
     const handleSelectAllChange = (e) => {
         const checked = e.target.checked;
@@ -218,17 +237,146 @@ const SSTCosts = () => {
                                                 Suivi du budget et des prestations santé
                                             </p>
                                         </div>
-                                        <Button
-                                            onClick={() => setShowForm(true)}
-                                            className="btn-primary-custom d-flex align-items-center"
-                                            style={{ height: '45px' }}
-                                        >
-                                            <FaPlusCircle size={20} className="me-2" />
-                                            <span>Déclarer un Coût / Facture</span>
-                                        </Button>
+                                        <div className="d-flex gap-2">
+                                            <FontAwesomeIcon
+                                                onClick={() => setFiltersVisible(!filtersVisible)}
+                                                icon={filtersVisible ? faClose : faFilter}
+                                                color={filtersVisible ? 'green' : ''}
+                                                style={{
+                                                    cursor: "pointer",
+                                                    fontSize: "1.9rem",
+                                                    color: "#2c767c",
+                                                    marginTop: "1.3%",
+                                                    marginRight: "8px",
+                                                }}
+                                                title="Filtres coûts"
+                                            />
+                                            <Button
+                                                onClick={() => setShowForm(true)}
+                                                className="btn-primary-custom d-flex align-items-center"
+                                                style={{ height: '45px' }}
+                                            >
+                                                <FaPlusCircle size={20} className="me-2" />
+                                                <span>Déclarer un Coût / Facture</span>
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <AnimatePresence>
+                                {filtersVisible && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="filters-container"
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '12px',
+                                            padding: '16px 20px',
+                                            minHeight: 0
+                                        }}
+                                    >
+                                        {/* Ligne 1: Icône et titre */}
+                                        <div className="filters-icon-section" style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            justifyContent: 'center',
+                                            marginLeft: '-8px',
+                                            marginRight: '14%',
+                                        }}>
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#4a90a4"
+                                                strokeWidth="2"
+                                                className="filters-icon"
+                                            >
+                                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                            </svg>
+                                            <span className="filters-title">Filtres</span>
+                                        </div>
+
+                                        {/* Ligne 2: Tous les filtres */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '1px',
+                                            flexWrap: 'wrap',
+                                            justifyContent: 'center',
+                                            marginLeft: '10.2%'
+                                        }}>
+                                            {[
+                                                {
+                                                    key: 'department',
+                                                    label: 'Département',
+                                                    value: filters.department,
+                                                    type: 'select',
+                                                    options: Array.from(new Set(sstCostsData.map(d => d.department))).map(s => ({ label: s, value: s })),
+                                                    placeholder: 'Tous les départements'
+                                                },
+                                                {
+                                                    key: 'status',
+                                                    label: 'Statut',
+                                                    value: filters.status,
+                                                    type: 'select',
+                                                    options: [
+                                                        { label: 'Réglé', value: 'paid' },
+                                                        { label: 'À payer', value: 'pending' }
+                                                    ],
+                                                    placeholder: 'Tous les statuts'
+                                                }
+                                            ].map((filter, index) => (
+                                                <div key={index} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    margin: 0,
+                                                    marginRight: '46px'
+                                                }}>
+                                                    <label className="filter-label" style={{
+                                                        fontSize: '0.9rem',
+                                                        margin: 0,
+                                                        marginRight: '-44px',
+                                                        whiteSpace: 'nowrap',
+                                                        minWidth: 'auto',
+                                                        fontWeight: 600,
+                                                        color: '#2c3e50'
+                                                    }}>
+                                                        {filter.label}
+                                                    </label>
+
+                                                    <select
+                                                        value={filter.value}
+                                                        onChange={(e) => setFilters(prev => ({ ...prev, [filter.key]: e.target.value }))}
+                                                        className="filter-input"
+                                                        style={{
+                                                            minWidth: 80,
+                                                            maxWidth: 150,
+                                                            height: 30,
+                                                            fontSize: '0.9rem',
+                                                            padding: '2px 6px',
+                                                            borderRadius: 6
+                                                        }}
+                                                    >
+                                                        <option value="">{filter.placeholder}</option>
+                                                        {filter.options?.map((option, optIndex) => (
+                                                            <option key={optIndex} value={option.value}>
+                                                                {option.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             <Row className="mb-4 g-4 text-dark">
                                 <Col md={3}>
