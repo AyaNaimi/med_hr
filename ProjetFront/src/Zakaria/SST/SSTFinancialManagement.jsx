@@ -46,34 +46,9 @@ const SSTFinancialManagement = () => {
     const [selectedItems, setSelectedItems] = useState([]);
 
     // --- DATA ---
-    const [doctors, setDoctors] = useState([
-        {
-            id: 'DOC-001',
-            name: 'Dr. Jean Martin',
-            contract: 'CDI (Salarié)',
-            payment: '4 500 DH / Virement',
-            cnss: '23456789 (Part Patr. incl.)',
-            service: 'Pôle Médical Casablanca',
-            employeesCount: 450,
-            sites: 'Casablanca, Rabat'
-        },
-        {
-            id: 'DOC-002',
-            name: 'Dr. Sarah Dupont',
-            contract: 'Prestation externe',
-            payment: '1 500 DH / Visite',
-            cnss: '--',
-            service: 'Cabinet Externe',
-            employeesCount: 120,
-            sites: 'Tanger'
-        }
-    ]);
+    const [doctors, setDoctors] = useState([]);
 
-    const [visitCosts, setVisitCosts] = useState([
-        { id: 'VST-101', doctor: 'Dr. Jean Martin', date: '2026-02-15', employees: 12, totalCost: '1 800 DH', status: 'Validé', department: 'Production' },
-        { id: 'VST-102', doctor: 'Dr. Sarah Dupont', date: '2026-02-14', employees: 8, totalCost: '1 200 DH', status: 'En attente', department: 'Logistique' },
-        { id: 'VST-103', doctor: 'Dr. Jean Martin', date: '2026-02-10', employees: 15, totalCost: '2 250 DH', status: 'Payé', department: 'RH' },
-    ]);
+    const [visitCosts, setVisitCosts] = useState([]);
 
     const filteredDoctors = doctors.filter(doc => {
         if (filters.contractType && !doc.contract.includes(filters.contractType)) return false;
@@ -310,7 +285,7 @@ const SSTFinancialManagement = () => {
                                             flexDirection: 'column',
                                             gap: '1px',
                                             backgroundColor: '#f8fafc',
-                                            
+
                                             borderRadius: '12px',
                                             border: '1px solid #eef2f6'
                                         }}

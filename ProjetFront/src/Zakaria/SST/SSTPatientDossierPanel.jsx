@@ -5,26 +5,18 @@ import { History, Activity, FileText, CalendarDays, ArrowRight, Activity as Acti
 const SSTPatientDossierPanel = ({ employee, onClose }) => {
     if (!employee) return null;
 
-    const visitHistory = [
-        {
-            id: 1, date: '12/01/2025', doctor: 'Dr. Martin', type: 'Visite Périodique',
-            biometrics: { weight: '74', bp: '120/80', pulse: '70', imc: '24.2' },
-            notes: { subjective: 'Patient en bonne santé globale.', assessment: 'Apte au poste.' },
-            aptitude: 'Apte'
-        },
-        {
-            id: 2, date: '15/06/2024', doctor: 'Dr. Sarah', type: 'Visite de Reprise',
-            biometrics: { weight: '76', bp: '130/85', pulse: '75', imc: '24.8' },
-            notes: { subjective: 'Douleurs lombaires légères.', assessment: 'Apte sous réserve (port de charges).' },
-            aptitude: 'Restricted'
-        },
-        {
-            id: 3, date: '10/01/2024', doctor: 'Dr. Martin', type: 'Visite d\'Embauche',
-            biometrics: { weight: '75', bp: '120/80', pulse: '72', imc: '24.5' },
-            notes: { subjective: 'RAS.', assessment: 'Apte.' },
-            aptitude: 'Apte'
-        }
-    ];
+    const getBMIInterpretation = (bmiValue) => {
+        const bmi = parseFloat(bmiValue);
+        if (!bmi || isNaN(bmi)) return { text: '-', color: 'text-muted' };
+        if (bmi < 18.5) return { text: 'Maigreur', color: 'text-warning' };
+        if (bmi <= 24.9) return { text: 'Normale', color: 'text-success' };
+        if (bmi <= 29.9) return { text: 'Surpoids', color: 'text-warning' };
+        if (bmi <= 34.9) return { text: 'Obésité I', color: 'text-danger' };
+        if (bmi <= 39.9) return { text: 'Obésité II', color: 'text-danger' };
+        return { text: 'Obésité III', color: 'text-danger' };
+    };
+
+    const visitHistory = [];
 
     return (
         <Card className="sst-form-container">
@@ -152,7 +144,8 @@ const SSTPatientDossierPanel = ({ employee, onClose }) => {
                                     <div className="d-flex justify-content-around">
                                         <div className="text-center">
                                             <div className="extra-small text-muted mb-1">IMC</div>
-                                            <div className="fw-black h6 mb-0">24.2</div>
+                                            <div className={`fw-black h6 mb-0 ${getBMIInterpretation('24.2').color}`}>24.2</div>
+                                            <div className={`extra-small fw-bold ${getBMIInterpretation('24.2').color}`} style={{ fontSize: '0.6rem' }}>{getBMIInterpretation('24.2').text}</div>
                                         </div>
                                         <div className="text-center">
                                             <div className="extra-small text-muted mb-1">Tension</div>
@@ -207,9 +200,10 @@ const SSTPatientDossierPanel = ({ employee, onClose }) => {
                                                 </div>
                                                 <Row className="g-2 text-center mb-3">
                                                     <Col>
-                                                        <div className="p-2 bg-white rounded-3 border border-light">
-                                                            <div className="extra-small text-muted">IMC</div>
-                                                            <div className="fw-black text-primary">{visit.biometrics.imc}</div>
+                                                        <div className="p-2 bg-white rounded-3 border border-light d-flex flex-column align-items-center justify-content-center">
+                                                            <div className="extra-small text-muted" style={{ fontSize: '0.6rem' }}>IMC</div>
+                                                            <div className={`fw-black ${getBMIInterpretation(visit.biometrics.imc).color}`} style={{ lineHeight: '1.1' }}>{visit.biometrics.imc}</div>
+                                                            <div className={`extra-small ${getBMIInterpretation(visit.biometrics.imc).color}`} style={{ fontSize: '0.55rem', lineHeight: '1' }}>{getBMIInterpretation(visit.biometrics.imc).text}</div>
                                                         </div>
                                                     </Col>
                                                     <Col>

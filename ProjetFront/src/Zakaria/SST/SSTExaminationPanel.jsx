@@ -5,17 +5,17 @@ import { Activity, Stethoscope, FileText, CheckCircle, AlertCircle, Clock, Scale
 const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
     const [examData, setExamData] = useState({
         biometrics: {
-            weight: '75',
-            height: '178',
-            bmi: '23.7',
-            bp_systolic: '120',
-            bp_diastolic: '80',
-            pulse: '72',
-            temp: '37.0',
-            spo2: '98',
-            glycemia: '0.95',
-            vision_right: '10',
-            vision_left: '10',
+            weight: '',
+            height: '',
+            bmi: '',
+            bp_systolic: '',
+            bp_diastolic: '',
+            pulse: '',
+            temp: '',
+            spo2: '',
+            glycemia: '',
+            vision_right: '',
+            vision_left: '',
             hearing_right: 'Normal',
             hearing_left: 'Normal'
         },
@@ -46,6 +46,20 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
             setLoading(false);
         }, 800);
     };
+
+    const getBMIInterpretation = (bmiValue) => {
+        const bmi = parseFloat(bmiValue);
+        if (!bmi || isNaN(bmi)) return { text: '-', color: 'text-muted' };
+        if (bmi < 18.5) return { text: 'Maigreur (risque de carences, fatigue)', color: 'text-warning' };
+        if (bmi <= 24.9) return { text: 'Corpulence normale (poids santé)', color: 'text-success' };
+        if (bmi <= 29.9) return { text: 'Surpoids (risque accru)', color: 'text-warning' };
+        if (bmi <= 34.9) return { text: 'Obésité modérée (classe I)', color: 'text-danger' };
+        if (bmi <= 39.9) return { text: 'Obésité sévère (classe II)', color: 'text-danger' };
+        return { text: 'Obésité massive (classe III)', color: 'text-danger' };
+    };
+
+    const bmiValue = (parseFloat(examData.biometrics.weight) / ((parseFloat(examData.biometrics.height) / 100) ** 2)).toFixed(1);
+    const bmiInterp = getBMIInterpretation(bmiValue);
 
     return (
         <Card className="sst-form-container">
@@ -202,8 +216,11 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                         <Col xs={4}>
                             <div className="form-group-wrapper mb-2">
                                 <Form.Label className="form-label-enhanced fs-xs text-muted">IMC</Form.Label>
-                                <div className="form-control-enhanced bg-light text-center fw-bold text-primary">
-                                    {(examData.biometrics.weight / ((examData.biometrics.height / 100) ** 2)).toFixed(1)}
+                                <div className={`form-control-enhanced bg-light text-center fw-bold ${bmiInterp.color}`} style={{ fontSize: '0.8rem', minHeight: '42px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div>{bmiValue !== 'NaN' ? bmiValue : '---'}</div>
+                                    {bmiValue !== 'NaN' && (
+                                        <div style={{ fontSize: '0.6rem', lineHeight: '1' }}>{bmiInterp.text}</div>
+                                    )}
                                 </div>
                             </div>
                         </Col>

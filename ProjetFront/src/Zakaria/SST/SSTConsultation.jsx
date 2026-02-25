@@ -74,17 +74,17 @@ const SSTConsultation = () => {
 
 
     const [biometrics, setBiometrics] = useState({
-        weight: '75',
-        height: '175',
-        pulse: '72',
-        bp_systolic: '120',
-        bp_diastolic: '80',
-        temperature: '36.6',
-        glycemia: '0.95',
-        vision_right: '10',
-        vision_left: '10',
-        spo2: '98',
-        waist: '90', // Tour de taille
+        weight: '',
+        height: '',
+        pulse: '',
+        bp_systolic: '',
+        bp_diastolic: '',
+        temperature: '',
+        glycemia: '',
+        vision_right: '',
+        vision_left: '',
+        spo2: '',
+        waist: '',
         hearing_right: 'Normal',
         hearing_left: 'Normal'
     });
@@ -141,41 +141,11 @@ const SSTConsultation = () => {
     };
 
     const departments = ['Production', 'Logistique', 'RH', 'IT', 'Administration'];
-    const visits = [
-        { id: 'all', label: 'Toutes les visites', date: '', dept: '', status: '' },
-        { id: 'VST-001', label: 'Visite Périodique Q1', date: '2026-02-15', dept: 'Production', status: 'Completed' },
-        { id: 'VST-002', label: 'Contrôle Annuel Logistique', date: '2026-02-16', dept: 'Logistique', status: 'Planned' },
-        { id: 'VST-003', label: 'Visites d\'Embauche', date: '2026-02-17', dept: 'RH', status: 'Planned' }
-    ];
+    const visits = [];
 
-    const patients = [
-        { id: 'E042', name: 'Marie Dubois', dept: 'Logistique', status: 'En attente', visitId: 'VST-002' },
-        { id: 'E001', name: 'Jean Dupont', dept: 'Production', status: 'En attente', visitId: 'VST-001' },
-        { id: 'E015', name: 'Luc Lefebvre', dept: 'Logistique', status: 'En attente', visitId: 'VST-002' },
-        { id: 'E002', name: 'Marie Martin', dept: 'Production', status: 'Complété', visitId: 'VST-001' },
-        { id: 'E010', name: 'Thomas Bernard', dept: 'IT', status: 'En attente', visitId: 'VST-003' },
-    ];
+    const patients = [];
 
-    const visitHistory = [
-        {
-            id: 1, date: '12/01/2025', doctor: 'Dr. Martin', type: 'Visite Périodique',
-            biometrics: { weight: '74', bp: '120/80', pulse: '70', imc: '24.2' },
-            notes: { subjective: 'Patient en bonne santé globale.', assessment: 'Apte au poste.' },
-            aptitude: 'Apte'
-        },
-        {
-            id: 2, date: '15/06/2024', doctor: 'Dr. Sarah', type: 'Visite de Reprise',
-            biometrics: { weight: '76', bp: '130/85', pulse: '75', imc: '24.8' },
-            notes: { subjective: 'Douleurs lombaires légères.', assessment: 'Apte sous réserve (port de charges).' },
-            aptitude: 'Restricted'
-        },
-        {
-            id: 3, date: '10/01/2024', doctor: 'Dr. Martin', type: 'Visite d\'Embauche',
-            biometrics: { weight: '75', bp: '120/80', pulse: '72', imc: '24.5' },
-            notes: { subjective: 'RAS.', assessment: 'Apte.' },
-            aptitude: 'Apte'
-        }
-    ];
+    const visitHistory = [];
 
     const filteredVisits = useMemo(() => {
         return visits.filter(v => {
@@ -197,12 +167,26 @@ const SSTConsultation = () => {
         return () => clearActions();
     }, [setTitle, clearActions]);
 
+    const getBMIInterpretation = (bmiValue) => {
+        const bmi = parseFloat(bmiValue);
+        if (!bmi || isNaN(bmi)) return { text: '-', color: 'text-muted' };
+        if (bmi < 18.5) return { text: 'Maigreur (risque de carences, fatigue)', color: 'text-warning' };
+        if (bmi <= 24.9) return { text: 'Corpulence normale (poids santé)', color: 'text-success' };
+        if (bmi <= 29.9) return { text: 'Surpoids (risque accru)', color: 'text-warning' };
+        if (bmi <= 34.9) return { text: 'Obésité modérée (classe I)', color: 'text-danger' };
+        if (bmi <= 39.9) return { text: 'Obésité sévère (classe II)', color: 'text-danger' };
+        return { text: 'Obésité massive (classe III)', color: 'text-danger' };
+    };
+
     const calculateBMI = useCallback(() => {
         const w = parseFloat(biometrics.weight);
         const h = parseFloat(biometrics.height) / 100;
         if (w && h) return (w / (h * h)).toFixed(1);
         return '---';
     }, [biometrics.weight, biometrics.height]);
+
+    const bmiValue = calculateBMI();
+    const bmiInterp = getBMIInterpretation(bmiValue);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -244,17 +228,17 @@ const SSTConsultation = () => {
         setStep(1);
         // Load existing biometrics if any, or reset to defaults
         setBiometrics({
-            weight: '75',
-            height: '175',
-            pulse: '72',
-            bp_systolic: '120',
-            bp_diastolic: '80',
-            temperature: '36.6',
-            glycemia: '0.95',
-            vision_right: '10',
-            vision_left: '10',
-            spo2: '98',
-            waist: '90',
+            weight: '',
+            height: '',
+            pulse: '',
+            bp_systolic: '',
+            bp_diastolic: '',
+            temperature: '',
+            glycemia: '',
+            vision_right: '',
+            vision_left: '',
+            spo2: '',
+            waist: '',
             hearing_right: 'Normal',
             hearing_left: 'Normal'
         });
@@ -309,30 +293,32 @@ const SSTConsultation = () => {
                             overflow-y: ${isMobile ? 'visible' : 'hidden'};
                             overflow-x: hidden;
                             background-color: #fff;
-                            border-radius: 12px;
-                            padding: ${isMobile ? '15px' : '24px'};
+                            border-radius: 10px;
+                            padding: 0 !important;
                             transition: all 0.3s ease;
-                            border: 1px solid #e9ecef;
-                            box-shadow: 0 6px 20px rgba(8, 179, 173, 0.08) !important;
-                            width: ${isMobile ? '100%' : '25%'} !important;
-                            min-width: ${isMobile ? '100%' : '280px'} !important;
+                            border: none !important;
+                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+                            width: ${isMobile ? '100%' : '20%'} !important;
+                            min-width: ${isMobile ? '100%' : '250px'} !important;
                             flex-shrink: 0;
                             margin-right: ${isMobile ? '0' : '20px'};
                             margin-bottom: ${isMobile ? '20px' : '0'};
                         }
 
-                        .groups-header {
-                            padding: 10px 0;
-                            margin-bottom: 20px;
-                            border-bottom: 1px solid #eef2f1;
+                        .groups-header-custom {
+                            padding: 15px;
+                            background: rgba(58, 138, 144, 0.03);
+                            border-bottom: 1px solid #f1f1f1;
+                            margin-bottom: 10px;
                         }
 
-                        .groups-header h6 {
+                        .groups-header-custom h6 {
                             color: #3a8a90;
-                            font-size: 0.9rem;
+                            font-size: 0.8rem;
                             font-weight: 900;
                             margin: 0;
                             letter-spacing: 0.5px;
+                            text-transform: uppercase;
                         }
 
                         .container3 {
@@ -352,33 +338,30 @@ const SSTConsultation = () => {
                         }
 
                         .department-item {
-                            border-radius: 10px;
-                            margin-bottom: 8px;
+                            border-radius: 8px;
+                            margin: 0 8px 4px 8px;
                             transition: all 0.2s ease;
-                            border-left: 4px solid transparent;
-                            background: rgba(255, 255, 255, 0.8);
+                            border-left: 3px solid transparent;
+                            background: transparent;
                             cursor: pointer;
                         }
 
                         .department-item:hover {
-                            background: #f0fdfc;
-                            box-shadow: 0 2px 8px rgba(8, 179, 173, 0.06);
-                            border-left: 4px solid #3a8a90;
+                            background: rgba(8, 179, 173, 0.05);
                         }
 
                         .department-item.selected {
-                            background: rgba(8, 179, 173, 0.03);
-                            border-left: 4px solid #3a8a90;
-                            box-shadow: 0 4px 12px rgba(8, 179, 173, 0.1);
+                            background: rgba(8, 179, 173, 0.1);
+                            border-left: 3px solid #3a8a90;
                         }
 
                         .department-item-content {
                             display: flex;
                             align-items: center;
-                            padding: 12px 15px;
-                            font-size: 15px;
+                            padding: 10px 12px;
+                            font-size: 14px;
                             font-weight: 500;
-                            color: #4b5563;
+                            color: #2c767c;
                         }
 
                         .common-text {
@@ -389,29 +372,22 @@ const SSTConsultation = () => {
                             overflow: hidden;
                             text-overflow: ellipsis;
                             font-size: 14px;
-                            font-weight: 600;
-                            color: #4b5563;
+                            font-weight: 500;
+                            color: #2c767c;
                             transition: color 0.2s;
                         }
 
                         .department-item.selected .common-text,
                         .department-item:hover .common-text {
                             color: #3a8a90;
-                            font-weight: 700;
+                            font-weight: 600;
                         }
 
                         .common-text svg {
-                            margin-right: 12px;
+                            margin-right: 10px;
                             color: #3a8a90;
                             font-size: 18px;
-                            opacity: 0.7;
-                            transition: all 0.2s;
-                        }
-
-                        .department-item.selected .common-text svg,
-                        .department-item:hover .common-text svg {
-                            opacity: 1;
-                            transform: scale(1.1);
+                            opacity: 0.8;
                         }
 
                         .btn-primary-teal {
@@ -453,28 +429,32 @@ const SSTConsultation = () => {
                         .scrollbar-teal::-webkit-scrollbar { width: 4px; }
                         .scrollbar-teal::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
                         .scrollbar-teal::-webkit-scrollbar-thumb { background: #3a8a90; border-radius: 10px; }
+
+                        .separator-custom {
+                            height: 1px;
+                            background-color: #e5e7eb;
+                            margin: 10px 0;
+                            width: 100%;
+                        }
                     `}</style>
                     <div className={isMobile ? "d-block" : "d-flex"} style={{ width: '100%', padding: isMobile ? '0 10px' : '0 20px', height: isMobile ? 'auto' : 'calc(100vh - 180px)', overflow: 'hidden' }}>
                         {step === 0 ? (
                             <>
                                 {/* Left Side: Visits Selection */}
                                 <div className="groups-section" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                    <div className="groups-header d-flex justify-content-between align-items-center">
-                                        <h6 className="text-uppercase">
-                                            <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
-                                            SESSIONS DE VISITE
+                                    <div className="groups-header-custom d-flex justify-content-between align-items-center">
+                                        <h6>
+                                            <FontAwesomeIcon icon={faCalendarWeek} className="me-2 text-primary" />
+                                            Sessions de Visite
                                         </h6>
                                         <div className="d-flex align-items-center">
                                             <FontAwesomeIcon
                                                 onClick={() => setSidebarFiltersVisible(!sidebarFiltersVisible)}
                                                 icon={sidebarFiltersVisible ? faClose : faFilter}
-                                                color={sidebarFiltersVisible ? 'green' : ''}
                                                 style={{
                                                     cursor: "pointer",
-                                                    fontSize: "1.9rem",
-                                                    color: "#2c767c",
-                                                    marginTop: "1.3%",
-                                                    marginRight: "8px",
+                                                    fontSize: "1.2rem",
+                                                    color: sidebarFiltersVisible ? "#22c55e" : "#3a8a90",
                                                 }}
                                             />
                                         </div>
@@ -549,8 +529,8 @@ const SSTConsultation = () => {
                                                 <div className="department-item-content">
                                                     <span className="common-text">
                                                         <IoFolderOpenOutline size={18} />
-                                                        <div>
-                                                            <div className="title-text">{visit.label}</div>
+                                                        <div className="d-flex flex-column">
+                                                            <div className="title-text fw-bold">{visit.label}</div>
                                                             <div className="extra-small opacity-50" style={{ fontSize: '10px' }}>
                                                                 {visit.date} • {visit.status === 'Completed' ? 'Terminée' : visit.status === 'Planned' ? 'Planifiée' : 'En cours'}
                                                             </div>
@@ -737,7 +717,9 @@ const SSTConsultation = () => {
                                             <div className="extra-small text-muted fw-bold uppercase tracking-widest d-flex align-items-center gap-2">
                                                 <span>{selectedPatient?.id}</span>
                                                 <span className="opacity-25">|</span>
-                                                <span>{selectedPatient?.dept}</span>
+                                                <span className="text-primary">{selectedPatient?.dept}</span>
+                                                <span className="opacity-25">|</span>
+                                                <span>Opérateur de Production</span>
                                                 <Badge bg="info" className="bg-opacity-10 text-info border-0 rounded-pill ms-2">
                                                     {visits.find(v => v.id === selectedPatient?.visitId)?.label || 'CONSULTATION'}
                                                 </Badge>
@@ -772,87 +754,82 @@ const SSTConsultation = () => {
                                 <Row className="g-4">
                                     {/* Colonne GAUCHE - Constantes et Paramètres */}
                                     <Col lg={3}>
-                                        <div className="d-flex flex-column gap-4">
+                                        <div className="d-flex flex-column gap-3">
 
-                                            {/* Card Contexte Professionnel (HR Context) */}
-                                            <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
-                                                <div className="bg-light p-3 border-bottom d-flex align-items-center gap-2">
-                                                    <Briefcase size={16} className="text-secondary" />
-                                                    <span className="extra-small fw-black text-muted text-uppercase tracking-widest">Contexte Pro.</span>
+                                            {/* Card Constantes (Styled like Dossier Synthesis) */}
+                                            <Card className="border-0 bg-light p-4 rounded-4 shadow-sm">
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <span className="extra-small fw-black uppercase tracking-widest text-muted">Constantes</span>
+                                                    <Stethoscope size={16} className="text-primary" />
                                                 </div>
-                                                <div className="p-4">
-                                                    <div className="mb-3">
-                                                        <label className="extra-small fw-bold text-muted mb-1">Poste Actuel</label>
-                                                        <div className="fw-bold text-dark small">Opérateur de Production</div>
-                                                    </div>
-                                                </div>
-                                            </Card>
 
-                                            {/* Card Biométrie */}
-                                            <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
-                                                <div className="bg-light p-3 border-bottom d-flex align-items-center gap-2">
-                                                    <Activity size={16} className="text-primary" />
-                                                    <span className="extra-small fw-black text-muted text-uppercase tracking-widest">Biométrie</span>
-                                                </div>
-                                                <div className="p-4">
-                                                    <div className="mb-3">
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <label className="extra-small fw-bold text-muted">Poids (kg)</label>
+                                                <div className="d-flex flex-column gap-3">
+                                                    <div>
+                                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                                            <span className="small text-muted fw-bold">Poids</span>
                                                             <span className="small fw-black text-primary">{biometrics.weight} kg</span>
                                                         </div>
                                                         <Form.Range min={40} max={150} step={0.5} value={biometrics.weight} onChange={e => setBiometrics({ ...biometrics, weight: e.target.value })} />
                                                     </div>
-                                                    <div className="mb-3">
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <label className="extra-small fw-bold text-muted">Taille (cm)</label>
+
+                                                    <div>
+                                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                                            <span className="small text-muted fw-bold">Taille</span>
                                                             <span className="small fw-black text-primary">{biometrics.height} cm</span>
                                                         </div>
                                                         <Form.Range min={140} max={220} value={biometrics.height} onChange={e => setBiometrics({ ...biometrics, height: e.target.value })} />
                                                     </div>
-                                                    <div className="mt-4 p-3 rounded-3 bg-primary bg-opacity-5 text-center border border-primary border-opacity-10">
-                                                        <div className="extra-small fw-black text-primary text-uppercase mb-1">IMC CALCULÉ</div>
-                                                        <div className="h4 fw-black mb-0 text-primary">{calculateBMI()}</div>
+
+                                                    <div className="p-3 rounded-4 bg-white border text-center mt-1">
+                                                        <div className="extra-small fw-black text-muted text-uppercase mb-1" style={{ fontSize: '0.6rem' }}>IMC Calculé</div>
+                                                        <div className={`h4 fw-black mb-0 ${bmiInterp.color}`}>{bmiValue}</div>
+                                                        {bmiValue !== '---' && (
+                                                            <div className={`extra-small fw-bold ${bmiInterp.color}`} style={{ fontSize: '0.65rem' }}>{bmiInterp.text}</div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </Card>
 
-                                            {/* Card Constantes Vitales */}
-                                            <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
-                                                <div className="bg-light p-3 border-bottom d-flex align-items-center gap-2">
+                                            {/* Card Signes Vitaux (Styled like Dossier Synthesis) */}
+                                            <Card className="border-0 bg-white p-4 rounded-4 shadow-sm border">
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <span className="extra-small fw-black uppercase tracking-widest text-muted">Signes Vitaux</span>
                                                     <Heart size={16} className="text-danger" />
-                                                    <span className="extra-small fw-black text-muted text-uppercase tracking-widest">Signes Vitaux</span>
                                                 </div>
-                                                <div className="p-4 d-flex flex-column gap-3">
-                                                    <Row className="g-2">
-                                                        <Col xs={6}>
-                                                            <label className="extra-small fw-bold text-muted mb-1">Systolique</label>
-                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-center py-2" value={biometrics.bp_systolic} onChange={e => setBiometrics({ ...biometrics, bp_systolic: e.target.value })} />
-                                                        </Col>
-                                                        <Col xs={6}>
-                                                            <label className="extra-small fw-bold text-muted mb-1">Diastolique</label>
-                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-center py-2" value={biometrics.bp_diastolic} onChange={e => setBiometrics({ ...biometrics, bp_diastolic: e.target.value })} />
-                                                        </Col>
-                                                    </Row>
-                                                    <div>
-                                                        <label className="extra-small fw-bold text-muted mb-1">Féq. Cardiaque (bpm)</label>
-                                                        <div className="position-relative">
-                                                            <Form.Control size="sm" className="bg-light border-0 fw-black py-2 ps-3" value={biometrics.pulse} onChange={e => setBiometrics({ ...biometrics, pulse: e.target.value })} />
-                                                            <Heart size={14} className="position-absolute text-danger" style={{ right: '10px', top: '10px' }} />
+
+                                                <div className="d-flex flex-column gap-3">
+                                                    <div className="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                                        <span className="small text-muted fw-bold">Tension</span>
+                                                        <div className="d-flex align-items-center gap-1">
+                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-center p-0" style={{ width: '35px' }} value={biometrics.bp_systolic} onChange={e => setBiometrics({ ...biometrics, bp_systolic: e.target.value })} />
+                                                            <span className="text-muted">/</span>
+                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-center p-0" style={{ width: '35px' }} value={biometrics.bp_diastolic} onChange={e => setBiometrics({ ...biometrics, bp_diastolic: e.target.value })} />
                                                         </div>
                                                     </div>
-                                                    <Row className="g-2">
-                                                        <Col xs={6}>
-                                                            <label className="extra-small fw-bold text-muted mb-1">Temp. (°C)</label>
-                                                            <div className="position-relative">
-                                                                <Form.Control size="sm" className="bg-light border-0 fw-black py-2" value={biometrics.temperature} onChange={e => setBiometrics({ ...biometrics, temperature: e.target.value })} />
-                                                                <Thermometer size={14} className="position-absolute text-info ms-1" style={{ right: '8px', top: '10px' }} />
-                                                            </div>
-                                                        </Col>
-                                                        <Col xs={6}>
-                                                            <label className="extra-small fw-bold text-muted mb-1">SpO2 (%)</label>
-                                                            <Form.Control size="sm" className="bg-light border-0 fw-black py-2" value={biometrics.spo2} onChange={e => setBiometrics({ ...biometrics, spo2: e.target.value })} />
-                                                        </Col>
-                                                    </Row>
+
+                                                    <div className="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                                        <span className="small text-muted fw-bold">Pouls</span>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-end p-0" style={{ width: '40px' }} value={biometrics.pulse} onChange={e => setBiometrics({ ...biometrics, pulse: e.target.value })} />
+                                                            <span className="extra-small text-muted">bpm</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                                        <span className="small text-muted fw-bold">Temp.</span>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-end p-0" style={{ width: '40px' }} value={biometrics.temperature} onChange={e => setBiometrics({ ...biometrics, temperature: e.target.value })} />
+                                                            <span className="extra-small text-muted">°C</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <span className="small text-muted fw-bold">SpO2</span>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <Form.Control size="sm" className="bg-light border-0 fw-black text-end p-0" style={{ width: '40px' }} value={biometrics.spo2} onChange={e => setBiometrics({ ...biometrics, spo2: e.target.value })} />
+                                                            <span className="extra-small text-muted">%</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </Card>
                                         </div>
@@ -1365,7 +1342,7 @@ const SSTConsultation = () => {
                 }
                 `}
             </style>
-        </ThemeProvider >
+        </ThemeProvider>
     );
 };
 

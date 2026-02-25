@@ -43,49 +43,12 @@ const SSTPayments = () => {
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
     const { dynamicStyles, isMobile } = useOpen();
 
-    const initialDoctorPayments = [
-        {
-            id: 'DOC-001',
-            name: 'Dr. Martin',
-            specialty: 'Généraliste',
-            baseSalary: 4500,
-            visitsCount: 124,
-            bonusPerVisit: 15,
-            extraHours: 12,
-            ratePerHour: 45,
-            status: 'Validé',
-            total: 6900
-        },
-        {
-            id: 'DOC-002',
-            name: 'Dr. Dupont',
-            specialty: 'Médecine du travail',
-            baseSalary: 5200,
-            visitsCount: 98,
-            bonusPerVisit: 20,
-            extraHours: 8,
-            ratePerHour: 55,
-            status: 'En attente',
-            total: 7600
-        },
-        {
-            id: 'DOC-003',
-            name: 'Dr. Leroy',
-            specialty: 'Psychologue',
-            baseSalary: 3800,
-            visitsCount: 145,
-            bonusPerVisit: 12,
-            extraHours: 0,
-            ratePerHour: 40,
-            status: 'Validé',
-            total: 5540
-        }
-    ];
+    const initialDoctorPayments = [];
 
-    const [doctorPayments, setDoctorPayments] = useState(initialDoctorPayments);
+    const [doctorPayments, setDoctorPayments] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showForm, setShowForm] = useState(false);
-    const [selectedDoctor, setSelectedDoctor] = useState(doctorPayments[0]);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [filteredData, setFilteredData] = useState(doctorPayments);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -421,8 +384,8 @@ const SSTPayments = () => {
                                                 </div>
                                             </div>
                                             <p className="extra-small fw-black text-muted uppercase tracking-widest mb-1">Total Actes / Visites</p>
-                                            <h3 className="fw-black mb-2">367 actes</h3>
-                                            <p className="extra-small text-muted fw-bold">Moyenne: 122 act./médecin</p>
+                                            <h3 className="fw-black mb-2">{doctorPayments.reduce((sum, d) => sum + d.visitsCount, 0)} actes</h3>
+                                            <p className="extra-small text-muted fw-bold">Moyenne: {doctorPayments.length > 0 ? Math.round(doctorPayments.reduce((sum, d) => sum + d.visitsCount, 0) / doctorPayments.length) : 0} act./médecin</p>
                                         </Card>
                                     </Col>
                                     <Col md={3}>
@@ -445,7 +408,7 @@ const SSTPayments = () => {
                                                 </div>
                                             </div>
                                             <p className="extra-small fw-black text-white-50 uppercase tracking-widest mb-1 text-white">Économie Prévue</p>
-                                            <h3 className="fw-black mb-2">-480€</h3>
+                                            <h3 className="fw-black mb-2">0€</h3>
                                             <p className="extra-small text-white-50 fw-bold">Vs mois dernier</p>
                                         </Card>
                                     </Col>

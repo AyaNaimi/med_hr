@@ -16,7 +16,7 @@ export const OpenProvider = ({ children }) => {
     width: '100%',
     left: 0,
     right: 0,
-  
+
     transition: 'all 0.2s ease',
   });
 
@@ -33,11 +33,14 @@ export const OpenProvider = ({ children }) => {
         width: '100%',
       }));
     } else {
+      const drawerWidth = 260; // Matching Navigation.jsx
+      const miniWidth = 72;   // theme.spacing(9)
+      const currentWidth = open ? drawerWidth : miniWidth;
+
       setDynamicStyles(prevStyles => ({
         ...prevStyles,
-        left: open ? '13.8%' : '4.5%',
-        // width: open ? '86.7%' : '96.5%',
-        width: open ? '86.2%' : '95.5%',
+        left: `${currentWidth}px`,
+        width: `calc(100% - ${currentWidth}px)`,
       }));
     }
   }, [open, isMobile]);
@@ -45,7 +48,7 @@ export const OpenProvider = ({ children }) => {
   return (
     <OpenContext.Provider value={{ dynamicStyles, open, toggleOpen, isMobile }}>
       {children}
-    </OpenContext.Provider> 
+    </OpenContext.Provider>
   );
 };
 

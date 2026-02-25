@@ -183,18 +183,8 @@ const Calendrie = () => {
 
     });
 
-    const groups = data?.calendrie || [
-        { id: 1, nom: 'Calendrier Administratif', periode: 'Hebdomadaire' },
-        { id: 2, nom: 'Shift Production (Matin)', periode: 'Mensuel' },
-        { id: 3, nom: 'Shift Production (Nuit)', periode: 'Mensuel' },
-        { id: 4, nom: 'Équipe Maintenance', periode: 'Hebdomadaire' }
-    ];
-    const tableData = data?.horaire || [
-        { id: 101, debut: '08:00', fin: '16:30', horaire: '1', jourDebut: 'Lundi', label: 'Admin 1' },
-        { id: 102, debut: '08:00', fin: '16:30', horaire: '1', jourDebut: 'Mardi', label: 'Admin 1' },
-        { id: 103, debut: '08:00', fin: '16:30', horaire: '1', jourDebut: 'Mercredi', label: 'Admin 1' },
-        { id: 104, debut: '22:00', fin: '06:00', horaire: '2', jourDebut: 'Lundi', label: 'Nuit' }
-    ];
+    const groups = data?.calendrie || [];
+    const tableData = data?.horaire || [];
     const detaiCalendrie = data?.detail || [];
 
 
@@ -1182,7 +1172,7 @@ const Calendrie = () => {
                                         <FontAwesomeIcon icon={faCalendarWeek} />
                                         CALENDRIERS
                                     </h6>
-                                    <div 
+                                    <div
                                         className="filter-icon-btn"
                                         onClick={() => setShowAddGroupe(true)}
                                         style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
@@ -1191,7 +1181,7 @@ const Calendrie = () => {
                                     </div>
                                 </div>
                                 <div className="flex-grow-1 overflow-auto scrollbar-teal pe-2">
-                                    <div 
+                                    <div
                                         className={`department-item ${!selectedGroup ? 'selected' : ''}`}
                                         onClick={() => setSelectedGroup(null)}
                                     >
@@ -1204,7 +1194,7 @@ const Calendrie = () => {
                                     </div>
 
                                     {groups.map(group => (
-                                        <div 
+                                        <div
                                             key={group.id}
                                             className={`department-item ${selectedGroup?.id === group.id ? 'selected' : ''}`}
                                             onClick={() => handleGroupClick(group)}

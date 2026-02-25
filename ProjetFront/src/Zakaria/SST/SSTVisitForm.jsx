@@ -3,17 +3,8 @@ import { Card, Form, Button, Alert, Spinner, Table, Badge, InputGroup } from 're
 import { User, Clock, Stethoscope, FileText, Search, Users, Filter, X } from 'lucide-react';
 
 const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
-    // Mock employees data for selection with last visit dates
-    const availableEmployees = [
-        { id: 'E001', name: 'Jean Dupont', department: 'Production', status: 'Apte', lastVisitDate: '2024-10-15' }, // Retard
-        { id: 'E002', name: 'Marie Dubois', department: 'Logistique', status: 'Apte', lastVisitDate: '2025-12-01' }, // À jour
-        { id: 'E003', name: 'Pierre Martin', department: 'RH', status: 'Apte', lastVisitDate: '2025-11-20' }, // À prévoir
-        { id: 'E004', name: 'Sophie Laurent', department: 'IT', status: 'Apte', lastVisitDate: '2026-01-05' }, // À jour
-        { id: 'E005', name: 'Alain Bernard', department: 'Production', status: 'A suivre', lastVisitDate: '2024-08-12' }, // Retard
-        { id: 'E006', name: 'Thomas Petit', department: 'Logistique', status: 'Apte', lastVisitDate: '2025-10-30' }, // À prévoir
-        { id: 'E007', name: 'Julie Leroy', department: 'Production', status: 'Apte', lastVisitDate: '2026-01-20' }, // À jour
-        { id: 'E008', name: 'Nicolas Roux', department: 'Maintenance', status: 'Attention', lastVisitDate: '2024-06-10' }, // Retard
-    ];
+    // List of employees for selection (should be fetched from parent or API)
+    const availableEmployees = [];
 
     // Helper function to determine priority status based on last visit date
     const getEmployeePriority = (lastVisitDate) => {
@@ -41,6 +32,7 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
 
     const [formData, setFormData] = useState({
         date: initialData?.date || '',
+        time: initialData?.time || '09:00',
         doctors: initialData?.doctors || (initialData?.doctor ? initialData.doctor.split(', ') : []),
         type: initialData?.type || '',
         lieu: initialData?.lieu || initialData?.location || '',
@@ -54,6 +46,7 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
     useEffect(() => {
         setFormData({
             date: initialData?.date || '',
+            time: initialData?.time || '09:00',
             doctors: initialData?.doctors || (initialData?.doctor ? initialData.doctor.split(', ') : []),
             type: initialData?.type || '',
             lieu: initialData?.lieu || initialData?.location || '',
@@ -96,14 +89,12 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
         }
     };
 
-    const handleDoctorToggle = (docName) => {
-        setFormData(prev => {
-            const isSelected = prev.doctors.includes(docName);
-            const newSelection = isSelected
-                ? prev.doctors.filter(d => d !== docName)
-                : [...prev.doctors, docName];
-            return { ...prev, doctors: newSelection };
-        });
+    const handleDoctorChange = (e) => {
+        const val = e.target.value;
+        setFormData(prev => ({
+            ...prev,
+            doctors: val ? [val] : []
+        }));
         if (validationErrors.doctors) {
             setValidationErrors(prev => ({ ...prev, doctors: '' }));
         }
@@ -122,7 +113,8 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
     const validateForm = () => {
         const errors = {};
         if (!formData.date) errors.date = 'La date est requise';
-        if (formData.doctors.length === 0) errors.doctors = 'Au moins un médecin est requis';
+        if (!formData.time) errors.time = "L'heure est requise";
+        if (formData.doctors.length === 0) errors.doctors = 'Le médecin est requis';
         if (!formData.type) errors.type = 'Le type de visite est requis';
         if (formData.selectedEmployees.length === 0) errors.selection = 'Veuillez sélectionner au moins un collaborateur';
         setValidationErrors(errors);
@@ -135,8 +127,6 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
         if (!validateForm()) return;
         try {
             setLoading(true);
-            // Re-map doctors to doctor for backward compatibility if needed, 
-            // but the parent should handle doctors array now.
             const submissionData = {
                 ...formData,
                 doctor: formData.doctors.join(', ')
@@ -357,38 +347,48 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
                             <Clock size={14} /> Informations Générales
                         </div>
 
-                        <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">Date de visite</Form.Label>
-                            <Form.Control
-                                type="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleChange}
-                                className={`form-control-enhanced ${validationErrors.date ? 'is-invalid' : ''}`}
-                            />
-                            {validationErrors.date && <span className="error-message">{validationErrors.date}</span>}
+                        <div className="row g-3">
+                            <div className="col-md-7">
+                                <div className="form-group-wrapper">
+                                    <Form.Label className="form-label-enhanced">Date de visite</Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        name="date"
+                                        value={formData.date}
+                                        onChange={handleChange}
+                                        className={`form-control-enhanced ${validationErrors.date ? 'is-invalid' : ''}`}
+                                    />
+                                    {validationErrors.date && <span className="error-message">{validationErrors.date}</span>}
+                                </div>
+                            </div>
+                            <div className="col-md-5">
+                                <div className="form-group-wrapper">
+                                    <Form.Label className="form-label-enhanced">Heure</Form.Label>
+                                    <Form.Control
+                                        type="time"
+                                        name="time"
+                                        value={formData.time}
+                                        onChange={handleChange}
+                                        className={`form-control-enhanced ${validationErrors.time ? 'is-invalid' : ''}`}
+                                    />
+                                    {validationErrors.time && <span className="error-message">{validationErrors.time}</span>}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="form-group-wrapper">
-                            <Form.Label className="form-label-enhanced">Médecins responsables ({formData.doctors.length})</Form.Label>
-                            <div className="d-flex flex-wrap gap-2 p-3 bg-light rounded-3 border">
-                                {['Dr. Martin', 'Dr. Dupont', 'Dr. Leroy', 'Dr. Bernard'].map(doc => {
-                                    const isSelected = formData.doctors.includes(doc);
-                                    return (
-                                        <Badge
-                                            key={doc}
-                                            bg={isSelected ? 'light' : 'white'}
-                                            text={isSelected ? 'primary' : 'dark'}
-                                            className={`rounded-pill px-3 py-2 cursor-pointer border ${isSelected ? 'border-primary shadow-sm' : 'border-light'}`}
-                                            onClick={() => handleDoctorToggle(doc)}
-                                            style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                                        >
-                                            {doc}
-                                            {isSelected && <X size={14} className="ms-2" />}
-                                        </Badge>
-                                    );
-                                })}
-                            </div>
+                            <Form.Label className="form-label-enhanced">Médecin responsable</Form.Label>
+                            <Form.Select
+                                name="doctor"
+                                value={formData.doctors[0] || ''}
+                                onChange={handleDoctorChange}
+                                className={`form-control-enhanced ${validationErrors.doctors ? 'is-invalid' : ''}`}
+                            >
+                                <option value="">Sélectionner un médecin</option>
+                                {['Dr. Martin', 'Dr. Dupont', 'Dr. Leroy', 'Dr. Bernard'].map(doc => (
+                                    <option key={doc} value={doc}>{doc}</option>
+                                ))}
+                            </Form.Select>
                             {validationErrors.doctors && <span className="error-message">{validationErrors.doctors}</span>}
                         </div>
 

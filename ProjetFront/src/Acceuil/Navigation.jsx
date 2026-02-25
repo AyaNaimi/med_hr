@@ -55,8 +55,7 @@ import MuiAppBar from "@mui/material/AppBar";
 import Swal from "sweetalert2";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 import StoreIcon from "@mui/icons-material/Store";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -95,7 +94,7 @@ import { faFileExcel } from "@fortawesome/free-solid-svg-icons";
 
 
 // const drawerWidth = "14%";
-const drawerWidth = "13%";
+const drawerWidth = 260;
 
 
 const AppBar = styled(MuiAppBar, {
@@ -111,8 +110,8 @@ const AppBar = styled(MuiAppBar, {
   boxShadow: "0 0 10px rgba(0,0,0,0.1)",
 
   ...(open && !isMobile && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth})`,
+    marginLeft: `${drawerWidth}px`,
+    width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -372,6 +371,7 @@ const Navigation = () => {
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const [permissions, setPermissions] = useState([]);
   const [isCommandsOpen, setIsCommandsOpen] = useState(false);
   const [isEmployeesOpen, setIsEmployeesOpen] = useState(false);
@@ -384,7 +384,6 @@ const Navigation = () => {
   const [isSSTOpen, setIsSSTOpen] = useState(false);
   const [isSSTMedicalOpen, setIsSSTMedicalOpen] = useState(false);
   const [isSSTFinanceOpen, setIsSSTFinanceOpen] = useState(false);
-  const [isSSTConfigOpen, setIsSSTConfigOpen] = useState(false);
 
 
 
@@ -458,15 +457,10 @@ const Navigation = () => {
   const handleSSTClick = () => setIsSSTOpen(!isSSTOpen);
   const handleSSTMedicalClick = () => setIsSSTMedicalOpen(!isSSTMedicalOpen);
   const handleSSTFinanceClick = () => setIsSSTFinanceOpen(!isSSTFinanceOpen);
-  const handleSSTConfigClick = () => setIsSSTConfigOpen(!isSSTConfigOpen);
 
 
 
 
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
-  const token = localStorage.getItem("API_TOKEN");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  const { logout } = useAuth();
   const [openDrawer, setOpenDrawer] = useState(false);
   const handleOptionChange = (event) => {
     const selectedValue = event.target.value;
@@ -489,11 +483,7 @@ const Navigation = () => {
   };
 
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
+
 
 
 
@@ -557,7 +547,13 @@ const Navigation = () => {
     };
 
     fetchUserData();
-  }, []); // Dépendance vide pour que ce useEffect s'exécute une seule fois après le montage initial
+  }, []);
+
+  useEffect(() => {
+    if (isMobile && open) {
+      toggleOpen();
+    }
+  }, [location.pathname, isMobile]);
 
 
   const MyListItemButton = styled(ListItemButton)(({ theme }) => ({
@@ -566,20 +562,7 @@ const Navigation = () => {
     px: 2.5,
   }));
 
-  const handleLogoutClick = async () => {
-    try {
-      // Logout logic
-      navigate("/login");
-    } catch (error) {
-      console.error("Error during logout:", error);
 
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "An error occurred during logout.",
-      });
-    }
-  };
 
   const toggleDrawer = () => {
     // setOpen(!open);
@@ -842,13 +825,7 @@ const Navigation = () => {
 
                 <Collapse in={isSSTOpen} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
-                    {/* Dashboard always at top of SST */}
-                    <SubMenuItem button component={Link} to="/sst" sx={{ pl: 6 }}>
-                      <ListItemIcon>
-                        <Activity size={18} color="white" />
-                      </ListItemIcon>
-                      <ListItemText primary="Pilotage SST" />
-                    </SubMenuItem>
+                    {/* Dashboard removed as per request */}
 
                     {/* SUIVI MEDICAL DROPDOWN */}
                     <ListItem button onClick={handleSSTMedicalClick} sx={{ pl: 7, color: "white", py: 0.5 }}>
@@ -902,27 +879,6 @@ const Navigation = () => {
                       </List>
                     </Collapse>
 
-                    {/* CONFIGURATION SST DROPDOWN */}
-                    <ListItem button onClick={handleSSTConfigClick} sx={{ pl: 7, color: "white", py: 0.5 }}>
-                      <ListItemIcon>
-                        <SettingsIcon sx={{ fontSize: 18, color: "white" }} />
-                      </ListItemIcon>
-                      <ListItemText primary="Configuration SST" sx={{ '& .MuiListItemText-primary': { fontSize: '0.85rem' } }} />
-                      {isSSTConfigOpen ? <KeyboardArrowUpIcon sx={{ fontSize: '1.2rem' }} /> : <KeyboardArrowDownIcon sx={{ fontSize: '1.2rem' }} />}
-                    </ListItem>
-
-                    <Collapse in={isSSTConfigOpen} timeout="auto" unmountOnExit>
-                      <List component="div" disablePadding>
-                        <SubMenuItem button component={Link} to="/sst-collaborateurs" sx={{ pl: 9, py: 0.4 }}>
-                          <ListItemIcon><PeopleIcon sx={{ fontSize: 16, color: "white" }} /></ListItemIcon>
-                          <ListItemText primary="Collaborateurs" sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }} />
-                        </SubMenuItem>
-                        <SubMenuItem button component={Link} to="/sst-societes" sx={{ pl: 9, py: 0.4 }}>
-                          <ListItemIcon><BusinessIcon sx={{ fontSize: 16, color: "white" }} /></ListItemIcon>
-                          <ListItemText primary="Sociétés" sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }} />
-                        </SubMenuItem>
-                      </List>
-                    </Collapse>
                   </List>
 
                 </Collapse>
@@ -1052,18 +1008,7 @@ const Navigation = () => {
 
           </List>
 
-          <LogoutButton
-            button
-            onClick={() => {
-              handleLogoutClick();
-              logout();
-            }}
-          >
-            <ListItemIcon>
-              <ExitToAppIcon />
-            </ListItemIcon>
-            <ListItemText primary="Se déconnecter" />
-          </LogoutButton>
+
 
 
 

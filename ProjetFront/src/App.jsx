@@ -1,8 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './App.css'
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { AuthProvider } from './AuthContext';
+import { Routes, Route } from 'react-router-dom';
 import Navigation from './Acceuil/Navigation';
 
 import Dashboard from './Acceuil/Dashboard';
@@ -31,50 +30,32 @@ import SSTPractitioners from './Zakaria/SST/SSTPractitioners.jsx';
 import SSTEmployees from './Zakaria/SST/SSTEmployees.jsx';
 import SSTSociete from './Zakaria/SST/SSTSociete.jsx';
 
-import Login from './Login/Login.jsx';
+
 import Calendrie from './Zakaria/Calendrie.jsx';
 
 const App = () => {
-    const location = useLocation();
-    const showNavigation = location.pathname !== '/login';
     return (
-        <AuthProvider>
-            <OpenProvider>
-                <HeaderProvider>
-                    {showNavigation && <Navigation />}
-                    <Routes>
-                        <Route path="/" element={<Dashboard />} />
-
-                        <Route path="/login" element={<Login />} />
-
-                        <Route path="/employes" element={<DepartementManager />} />
-
-
-
-                        <Route path="/emphistorique" element={<EmpHistorique />} />
-
-
-
-
-
-
-                        <Route path="/societes" element={<Societe />} />
-                        <Route path="/sst" element={<SSTDashboard />} />
-                        <Route path="/sst-visites" element={<SSTVisits />} />
-                        <Route path="/sst-dossiers" element={<SSTMedicalRecordsManager />} />
-                        <Route path="/sst-paiements" element={<SSTFinancialManagement />} />
-                        <Route path="/sst-couts" element={<SSTCosts />} />
-                        <Route path="/sst-consultation" element={<SSTConsultation />} />
-                        <Route path="/sst-praticiens" element={<SSTPractitioners />} />
-                        <Route path="/sst-collaborateurs" element={<SSTEmployees />} />
-                        <Route path="/sst-societes" element={<SSTSociete />} />
-
-
-                        <Route path="/calendrier" element={<Calendrie />} />
-                    </Routes>
-                </HeaderProvider>
-            </OpenProvider>
-        </AuthProvider>
+        <OpenProvider>
+            <HeaderProvider>
+                <Navigation />
+                <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/employes" element={<DepartementManager />} />
+                    <Route path="/emphistorique" element={<EmpHistorique />} />
+                    <Route path="/societes" element={<Societe />} />
+                    <Route path="/sst" element={<SSTDashboard />} />
+                    <Route path="/sst-visites" element={<SSTVisits />} />
+                    <Route path="/sst-dossiers" element={<SSTMedicalRecordsManager />} />
+                    <Route path="/sst-paiements" element={<SSTFinancialManagement />} />
+                    <Route path="/sst-couts" element={<SSTCosts />} />
+                    <Route path="/sst-consultation" element={<SSTConsultation />} />
+                    <Route path="/sst-praticiens" element={<SSTPractitioners />} />
+                    <Route path="/sst-collaborateurs" element={<SSTEmployees />} />
+                    <Route path="/sst-societes" element={<SSTSociete />} />
+                    <Route path="/calendrier" element={<Calendrie />} />
+                </Routes>
+            </HeaderProvider>
+        </OpenProvider>
     );
 };
 

@@ -20,11 +20,7 @@ const SSTPractitioners = () => {
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
     const { dynamicStyles, isMobile } = useOpen();
 
-    const [practitioners, setPractitioners] = useState([
-        { id: 1, name: "Tazi", firstName: "Amine", type: "Externe", specialty: "Généraliste", phone: "06 61 23 45 67", email: "amine.tazi@med.com", status: "Actif", diplome: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
-        { id: 2, name: "Benali", firstName: "Sarah", type: "Employé", specialty: "Travail", phone: "06 63 98 76 54", email: "s.benali@usine.com", status: "Actif" },
-        { id: 3, name: "Idrissi", firstName: "Karim", type: "Externe", specialty: "Cardiologue", phone: "06 61 12 12 12", email: "k.idrissi@med.com", status: "En attente" },
-    ]);
+    const [practitioners, setPractitioners] = useState([]);
 
     const [filteredData, setFilteredData] = useState(practitioners);
     const [page, setPage] = useState(0);

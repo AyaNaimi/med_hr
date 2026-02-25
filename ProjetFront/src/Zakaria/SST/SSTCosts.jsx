@@ -43,47 +43,9 @@ const SSTCosts = () => {
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
     const { dynamicStyles, isMobile } = useOpen();
 
-    const [sstCostsData, setSstCostsData] = useState([
-        {
-            id: 'F-2026-001',
-            employee: 'Marie Dubois',
-            department: 'Logistique',
-            date: '2026-01-28',
-            amount: 85,
-            status: 'paid',
-            doctor: 'Dr. Martin',
-            type: 'Visite Périodique'
-        },
-        {
-            id: 'F-2026-002',
-            employee: 'Jean Martin',
-            department: 'RH',
-            date: '2026-01-27',
-            amount: 120,
-            status: 'pending',
-            doctor: 'Dr. Dupont',
-            type: 'Visite Embauche'
-        },
-        {
-            id: 'F-2026-003',
-            employee: 'Sophie Bernard',
-            department: 'IT',
-            date: '2026-01-26',
-            amount: 65,
-            status: 'paid',
-            doctor: 'Dr. Martin',
-            type: 'Suivi Médical'
-        },
-    ]);
+    const [sstCostsData, setSstCostsData] = useState([]);
 
-    const budgetData = [
-        { month: 'Jan', cost: 12000 },
-        { month: 'Fév', cost: 15000 },
-        { month: 'Mar', cost: 11000 },
-        { month: 'Avr', cost: 18000 },
-        { month: 'Mai', cost: 14000 },
-        { month: 'Juin', cost: 16000 },
-    ];
+    const budgetData = [];
 
     const [filteredData, setFilteredData] = useState(sstCostsData);
     const [showForm, setShowForm] = useState(false);

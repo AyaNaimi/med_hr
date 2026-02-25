@@ -16,6 +16,7 @@ import "../Style.css";
 import ExpandRTable from "../Employe/ExpandRTable";
 import { motion, AnimatePresence } from 'framer-motion';
 import GenericSidePanel from '../GenericSidePanel';
+import SSTVisitForm from './SSTVisitForm';
 import { useOpen } from "../../Acceuil/OpenProvider";
 import { useHeader } from "../../Acceuil/HeaderContext";
 // import PremiumFilters from '../Components/PremiumFilters';
@@ -35,101 +36,7 @@ const SSTMedicalRecords = React.forwardRef(({
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
     const { dynamicStyles, isMobile } = useOpen();
 
-    const [medicalRecords, setMedicalRecords] = useState([
-        {
-            id: 'E002',
-            name: 'Marie Martin',
-            dept: 'Production',
-            lastVisit: '2025-12-10',
-            status: 'Apte',
-            vitals: {
-                weight: '65kg',
-                height: '168cm',
-                bmi: '23.0',
-                bp: '12/8',
-                pulse: '72',
-                statu: 'normal'
-            },
-            files: [
-                { name: 'Bilan sanguin.pdf', date: '2025-12-10', type: 'Laboratoire', size: '1.2 MB' },
-                { name: 'Arrêt maladie 2025.pdf', date: '2025-06-15', type: 'Certificat', size: '0.8 MB' },
-            ],
-            history: [
-                {
-                    date: '2025-12-10',
-                    type: 'Visite médicale périodique',
-                    note: 'Examen standard. Tout est normal. Vision ok.',
-                    doctor: 'Dr. Martin',
-                    details: {
-                        weight: '65',
-                        height: '168',
-                        bmi: '23.0',
-                        bp: '12/8',
-                        pulse: '72',
-                        temperature: '37.0',
-                    },
-                    diagnosis: 'Apte au poste. Rien à signaler.',
-                    prescription: 'Aucune',
-                },
-                {
-                    date: '2025-06-15',
-                    type: 'Arrêt maladie',
-                    note: 'Grippe saisonnière severe.',
-                    doctor: 'Dr. Dupont',
-                    details: {
-                        weight: '64',
-                        height: '168',
-                        bmi: '22.7',
-                        bp: '13/8',
-                        pulse: '88',
-                        temperature: '39.2',
-                    },
-                    diagnosis: 'Syndrome grippal avéré.',
-                    prescription: 'Paracétamol, Repos 5 jours.',
-                },
-            ],
-            allergies: ['Pénicilline'],
-            riskFactors: ['Travail sur écran', 'Stress'],
-        },
-        {
-            id: 'E015',
-            name: 'Luc Lefebvre',
-            dept: 'Logistique',
-            lastVisit: '2026-01-05',
-            status: 'Apte avec réserves',
-            vitals: {
-                weight: '88kg',
-                height: '175cm',
-                bmi: '28.7',
-                bp: '14/9',
-                pulse: '78',
-                statu: 'warning'
-            },
-            files: [
-                { name: 'Certificat aptitude.pdf', date: '2026-01-05', type: 'Administratif', size: '0.5 MB' },
-            ],
-            history: [
-                {
-                    date: '2026-01-05',
-                    type: 'Visite d\'embauche',
-                    note: 'Restriction port de charges > 10kg.',
-                    doctor: 'Dr. Martin',
-                    details: {
-                        weight: '88',
-                        height: '175',
-                        bmi: '28.7',
-                        bp: '14/9',
-                        pulse: '78',
-                        temperature: '36.8',
-                    },
-                    diagnosis: 'Surpoids modéré, hypertension légère.',
-                    prescription: 'Surveillance TA, Régime hyposodé.',
-                },
-            ],
-            allergies: [],
-            riskFactors: ['Manutention manuelle', 'bruit'],
-        },
-    ]);
+    const [medicalRecords, setMedicalRecords] = useState([]);
 
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [filteredData, setFilteredData] = useState(medicalRecords);
@@ -745,9 +652,23 @@ const SSTMedicalRecords = React.forwardRef(({
                 displayMode="inline"
                 showHeader={false}
             >
-                <div className="p-4 text-center">
-                    <p className="text-muted">Le formulaire de visite sera bientôt disponible ici.</p>
-                </div>
+                <SSTVisitForm
+                    onSubmit={(data) => {
+                        console.log("Visit created:", data);
+                        Swal.fire({
+                            title: 'Succès !',
+                            text: 'La visite a été programmée pour le ' + data.date + ' à ' + data.time,
+                            icon: 'success',
+                            confirmButtonColor: '#3a8a90'
+                        });
+                        setShowForm(false);
+                        if (setIsAddingVisit) setIsAddingVisit(false);
+                    }}
+                    onCancel={() => {
+                        setShowForm(false);
+                        if (setIsAddingVisit) setIsAddingVisit(false);
+                    }}
+                />
             </GenericSidePanel>
             <style>
                 {`

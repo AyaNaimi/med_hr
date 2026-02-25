@@ -54,49 +54,7 @@ const SSTVisits = () => {
     const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
     const { dynamicStyles, isMobile } = useOpen();
 
-    const [visitsData, setVisitsData] = useState([
-        {
-            id: 'VST-001',
-            date: '2026-02-15',
-            doctor: 'Dr. Martin, Dr. Dupont',
-            department: 'Production',
-            location: 'Cabinet Mobile A',
-            type: 'Périodique',
-            progress: 0,
-            status: 'planifiée',
-            employees: [
-                { id: 'E001', name: 'Jean Dupont', department: 'Production', status: 'Inscrit' },
-                { id: 'E005', name: 'Alain Bernard', department: 'Production', status: 'Inscrit' }
-            ]
-        },
-        {
-            id: 'VST-002',
-            date: '2026-02-14',
-            doctor: 'Dr. Dupont',
-            department: 'Logistique',
-            location: 'Infirmerie Centrale',
-            type: 'Reprise',
-            progress: 45,
-            status: 'en_cours',
-            employees: [
-                { id: 'E002', name: 'Marie Dubois', department: 'Logistique', status: 'Complété' },
-                { id: 'E015', name: 'Luc Lefebvre', department: 'Logistique', status: 'En attente' }
-            ]
-        },
-        {
-            id: 'VST-003',
-            date: '2026-02-14',
-            doctor: 'Dr. Martin',
-            department: 'RH',
-            location: 'Infirmerie Centrale',
-            type: 'Périodique',
-            progress: 100,
-            status: 'terminée',
-            employees: [
-                { id: 'E003', name: 'Pierre Martin', department: 'RH', status: 'Complété' }
-            ]
-        },
-    ]);
+    const [visitsData, setVisitsData] = useState([]);
 
     const [expandedRows, setExpandedRows] = useState({});
 
@@ -117,14 +75,8 @@ const SSTVisits = () => {
         setFiltersVisible(isVisible);
     };
 
-    // Mock employees for selection
-    const employees = [
-        { id: 'E001', name: 'Jean Dupont', department: 'Production', status: 'Inscrit', type: 'Normal' },
-        { id: 'E002', name: 'Marie Dubois', department: 'Logistique', status: 'Nouveau', type: 'Urgent' },
-        { id: 'E003', name: 'Pierre Martin', department: 'RH', status: 'Inscrit', type: 'Normal' },
-        { id: 'E004', name: 'Sophie Laurent', department: 'IT', status: 'Nouveau', type: 'Urgent' },
-        { id: 'E005', name: 'Alain Bernard', department: 'Production', status: 'Inscrit', type: 'Normal' },
-    ];
+    // Employees for selection (should be fetched from API)
+    const employees = [];
 
     const [patientFilters, setPatientFilters] = useState({
         dept: '',
@@ -357,7 +309,7 @@ const SSTVisits = () => {
             render: (item) => (
                 <div>
                     <div className="fw-bold small text-dark">{item.date}</div>
-                    <div className="extra-small text-muted">09:00</div>
+                    <div className="extra-small text-muted">{item.time || '09:00'}</div>
                 </div>
             )
         },
@@ -440,9 +392,21 @@ const SSTVisits = () => {
             label: 'Statut',
             render: (item) => (
                 <Badge
-                    bg={item.status === 'planifiée' ? 'info' : item.status === 'en_cours' ? 'warning' : 'success'}
-                    className="rounded-pill uppercase px-3 py-2 bg-opacity-75"
-                    style={{ fontSize: '0.65rem' }}
+                    style={{
+                        backgroundColor:
+                            item.status === 'planifiée' ? 'rgba(14, 165, 233, 0.08)' :
+                                item.status === 'en_cours' ? 'rgba(245, 158, 11, 0.08)' :
+                                    'rgba(34, 197, 94, 0.08)',
+                        color:
+                            item.status === 'planifiée' ? '#0ea5e9' :
+                                item.status === 'en_cours' ? '#f59e0b' :
+                                    '#22c55e',
+                        fontSize: '0.65rem',
+                        padding: '6px 12px',
+                        fontWeight: 800,
+                        border: 'none'
+                    }}
+                    className="rounded-pill text-uppercase"
                 >
                     {item.status.replace('_', ' ')}
                 </Badge>
@@ -492,7 +456,7 @@ const SSTVisits = () => {
 
             <div className="main-sub-table">
                 <Table className="mb-0">
-                    <thead style={{ backgroundColor: '#f8fbfa' }}>
+                    <thead style={{ backgroundColor: '#f9fafb' }}>
                         <tr>
                             <th className="border-0 extra-small fw-black text-muted text-uppercase">Collaborateur</th>
                             <th className="border-0 extra-small fw-black text-muted text-uppercase">Service</th>
@@ -512,7 +476,7 @@ const SSTVisits = () => {
                                         <td className="border-0 py-3">
                                             <div className="d-flex align-items-center gap-3">
                                                 <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                                                    style={{ width: '36px', height: '36px', fontSize: '12px', background: 'rgba(58, 138, 144, 0.1)', color: '#3a8a90' }}>
+                                                    style={{ width: '36px', height: '36px', fontSize: '12px', background: 'rgba(100, 116, 139, 0.08)', color: '#475569' }}>
                                                     {emp.name?.split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div>
@@ -526,12 +490,21 @@ const SSTVisits = () => {
                                         </td>
                                         <td className="border-0 py-3 align-middle">
                                             <Badge style={{
-                                                backgroundColor: emp.status === 'Apte' ? 'rgba(46, 213, 115, 0.1)' : 'rgba(255, 165, 2, 0.1)',
-                                                color: emp.status === 'Apte' ? '#2ed573' : '#ffa502',
+                                                backgroundColor:
+                                                    emp.status === 'Apte' ? 'rgba(34, 197, 94, 0.08)' :
+                                                        emp.status === 'Inapte' ? 'rgba(239, 68, 68, 0.08)' :
+                                                            emp.status === 'A revoir' ? 'rgba(249, 115, 22, 0.08)' :
+                                                                'rgba(100, 116, 139, 0.08)',
+                                                color:
+                                                    emp.status === 'Apte' ? '#16a34a' :
+                                                        emp.status === 'Inapte' ? '#dc2626' :
+                                                            emp.status === 'A revoir' ? '#ea580c' :
+                                                                '#475569',
                                                 border: 'none',
-                                                padding: '6px 12px',
-                                                fontSize: '10px',
-                                                fontWeight: 800
+                                                padding: '6px 14px',
+                                                fontSize: '11px',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.3px'
                                             }} className="rounded-pill text-uppercase">
                                                 {emp.status}
                                             </Badge>
@@ -636,8 +609,8 @@ const SSTVisits = () => {
 
                         .expanded-row-container {
                             padding: 24px;
-                            background-color: #f8fbfa;
-                            border-bottom: 2px solid #eef2f1;
+                            background-color: #ffffff;
+                            border-bottom: 2px solid #f1f5f9;
                         }
 
                         .sub-table-header {
@@ -657,8 +630,8 @@ const SSTVisits = () => {
                         }
 
                         .sub-table-badge {
-                            background-color: rgba(58, 138, 144, 0.1);
-                            color: #3a8a90;
+                            background-color: rgba(100, 116, 139, 0.08);
+                            color: #64748b;
                             padding: 4px 12px;
                             border-radius: 20px;
                             font-size: 11px;

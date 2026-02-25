@@ -24,44 +24,29 @@ const SSTDashboard = () => {
   const { setTitle, setOnPrint, setOnExportPDF, setOnExportExcel, searchQuery, clearActions } = useHeader();
   const { dynamicStyles, isMobile } = useOpen();
 
-  // Données fictives (portées de imllimenter)
-  const complianceData = {
-    totalEmployees: 1247,
-    compliant: 1182,
-    pending: 45,
-    overdue: 20
-  };
+  // Dashboard data (should be fetched from API)
+  const [complianceData, setComplianceData] = useState({
+    totalEmployees: 0,
+    compliant: 0,
+    pending: 0,
+    overdue: 0
+  });
 
-  const absenceStats = {
-    totalAbsences: 38,
-    maladie: 22,
-    accident: 6,
-    personnel: 10,
-    evolution: '+12% ce mois',
-  };
+  const [absenceStats, setAbsenceStats] = useState({
+    totalAbsences: 0,
+    maladie: 0,
+    accident: 0,
+    personnel: 0,
+    evolution: '0% ce mois',
+  });
 
-  const recentAbsences = [
-    { id: 'E002', name: 'Marie Martin', dept: 'Production', type: 'Maladie', from: '2026-01-10', to: '2026-01-20', status: 'En cours' },
-    { id: 'E015', name: 'Luc Lefebvre', dept: 'Logistique', type: 'Accident', from: '2026-01-05', to: '2026-01-18', status: 'En cours' },
-    { id: 'E089', name: 'Karine Petit', dept: 'Production', type: 'Personnel', from: '2026-01-01', to: '2026-01-03', status: 'Terminé' },
-    { id: 'E212', name: 'Robert Durand', dept: 'Maintenance', type: 'Maladie', from: '2025-12-28', to: '2026-01-04', status: 'Terminé' },
-  ];
+  const [recentAbsences, setRecentAbsences] = useState([]);
+  const [activeRestrictions, setActiveRestrictions] = useState([]);
+  const [departmentCompliance, setDepartmentCompliance] = useState([]);
 
-  const activeRestrictions = [
-    { id: 'E002', name: 'Marie Martin', dept: 'Production', restriction: 'Pas de port de charges > 5kg', expiry: '2026-06-30', status: 'active' },
-    { id: 'E015', name: 'Luc Lefebvre', dept: 'Logistique', restriction: 'Travail de jour uniquement', expiry: '2026-03-15', status: 'active' },
-    { id: 'E089', name: 'Karine Petit', dept: 'Production', restriction: 'Éviter les mouvements répétitifs du poignet droit', expiry: 'Permanent', status: 'permanent' },
-    { id: 'E212', name: 'Robert Durand', dept: 'Maintenance', restriction: 'Port du casque antibruit obligatoire (sensibilité accrue)', expiry: '2026-12-31', status: 'active' },
-  ];
-
-  const departmentCompliance = [
-    { name: 'Production', total: 450, compliant: 420, risk: 'high' },
-    { name: 'Logistique', total: 320, compliant: 298, risk: 'medium' },
-    { name: 'Administration', total: 185, compliant: 185, risk: 'low' },
-    { name: 'Maintenance', total: 82, compliant: 79, risk: 'high' },
-  ];
-
-  const complianceRate = Math.round((complianceData.compliant / complianceData.totalEmployees) * 100);
+  const complianceRate = complianceData.totalEmployees > 0
+    ? Math.round((complianceData.compliant / complianceData.totalEmployees) * 100)
+    : 0;
 
   useEffect(() => {
     setTitle("Pilotage Santé & Sécurité (SST)");

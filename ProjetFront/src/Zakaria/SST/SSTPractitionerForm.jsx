@@ -234,6 +234,77 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                 <div className="sst-form-body scrollbar-teal">
                     <Form onSubmit={handleSubmit} className="d-flex flex-column h-100">
                         <div className="flex-grow-1">
+                            {/* Photo Upload at Top */}
+                            <div className="d-flex flex-column align-items-center mb-4 mt-2">
+                                <div
+                                    className="position-relative mb-3"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => {
+                                        const url = formData.photo
+                                            ? (typeof formData.photo === 'string' ? formData.photo : URL.createObjectURL(formData.photo))
+                                            : (initialData?.photo ? (typeof initialData.photo === 'string' ? initialData.photo : URL.createObjectURL(initialData.photo)) : null);
+
+                                        if (url) {
+                                            Swal.fire({
+                                                title: `${formData.firstName} ${formData.name}`,
+                                                imageUrl: url,
+                                                imageAlt: 'Photo du praticien',
+                                                showConfirmButton: false,
+                                                showCloseButton: true,
+                                                imageWidth: 400,
+                                                imageHeight: 400,
+                                                imageClass: 'rounded-4 object-fit-cover shadow-sm',
+                                                customClass: {
+                                                    popup: 'rounded-4',
+                                                    closeButton: 'zoom-close-btn'
+                                                },
+                                                width: 'auto',
+                                                padding: '2rem'
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <div
+                                        className="rounded-circle d-flex align-items-center justify-content-center border shadow-sm"
+                                        style={{
+                                            width: '100px',
+                                            height: '100px',
+                                            backgroundColor: '#f8fafc',
+                                            overflow: 'hidden',
+                                            border: '2px dashed #cbd5e1'
+                                        }}
+                                    >
+                                        {(formData.photo || initialData?.photo) ? (
+                                            <img
+                                                src={formData.photo
+                                                    ? (typeof formData.photo === 'string' ? formData.photo : URL.createObjectURL(formData.photo))
+                                                    : (typeof initialData.photo === 'string' ? initialData.photo : URL.createObjectURL(initialData.photo))}
+                                                alt="Preview"
+                                                className="w-100 h-100 object-fit-cover"
+                                            />
+                                        ) : (
+                                            <Camera size={40} className="text-muted opacity-50" />
+                                        )}
+                                    </div>
+                                    <label
+                                        htmlFor="photo-upload"
+                                        className="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                        style={{ width: '32px', height: '32px', cursor: 'pointer', border: '2px solid white' }}
+                                    >
+                                        <Camera size={16} />
+                                    </label>
+                                    <input
+                                        id="photo-upload"
+                                        type="file"
+                                        name="photo"
+                                        onChange={handleChange}
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
+                                <span className="extra-small fw-bold text-muted">Photo du praticien</span>
+                            </div>
+
                             <div className="form-group-wrapper">
                                 <Form.Label className="form-label-enhanced">
                                     <User size={16} className="icon-accent" />
@@ -328,63 +399,6 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                                     className="form-control-enhanced"
                                     placeholder="exemple@med.com"
                                 />
-                            </div>
-
-                            <div className="form-group-wrapper">
-                                <Form.Label className="form-label-enhanced">
-                                    <Camera size={16} className="icon-accent" />
-                                    Photo du praticien
-                                </Form.Label>
-                                <div className="d-flex align-items-center gap-3">
-                                    <div className="flex-grow-1">
-                                        <Form.Control
-                                            type="file"
-                                            name="photo"
-                                            onChange={handleChange}
-                                            accept="image/*"
-                                            className="form-control-enhanced"
-                                        />
-                                    </div>
-                                    {(formData.photo || initialData?.photo) && (
-                                        <div
-                                            className="position-relative"
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() => {
-                                                const url = formData.photo
-                                                    ? (typeof formData.photo === 'string' ? formData.photo : URL.createObjectURL(formData.photo))
-                                                    : (typeof initialData.photo === 'string' ? initialData.photo : URL.createObjectURL(initialData.photo));
-                                                Swal.fire({
-                                                    title: `${formData.firstName} ${formData.name}`,
-                                                    imageUrl: url,
-                                                    imageAlt: 'Photo du praticien',
-                                                    showConfirmButton: false,
-                                                    showCloseButton: true,
-                                                    imageWidth: 400,
-                                                    imageHeight: 400,
-                                                    imageClass: 'rounded-4 object-fit-cover shadow-sm',
-                                                    customClass: {
-                                                        popup: 'rounded-4',
-                                                        closeButton: 'zoom-close-btn'
-                                                    },
-                                                    width: 'auto',
-                                                    padding: '2rem'
-                                                });
-                                            }}
-                                        >
-                                            <img
-                                                src={formData.photo
-                                                    ? (typeof formData.photo === 'string' ? formData.photo : URL.createObjectURL(formData.photo))
-                                                    : (typeof initialData.photo === 'string' ? initialData.photo : URL.createObjectURL(initialData.photo))}
-                                                alt="Preview"
-                                                className="rounded-circle object-fit-cover shadow-sm border"
-                                                style={{ width: '45px', height: '45px' }}
-                                            />
-                                            <div className="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', border: '1px solid #eee' }}>
-                                                <ZoomIn size={10} className="text-primary" />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
                             </div>
 
                             <div className="form-group-wrapper">
