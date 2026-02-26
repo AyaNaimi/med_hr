@@ -133,6 +133,73 @@ class ExamenMedicalController extends Controller
         ];
     }
 
+    private function formatVisitFallback(Visite $visit, int $employeId): array
+    {
+        return [
+            'id' => 'visit-' . $visit->id,
+            'visite_id' => $visit->id,
+            'employe_id' => $employeId,
+            'date_examen' => $visit->date ? ($visit->date . ' ' . ($visit->time ?? '00:00:00')) : null,
+            'motif' => $visit->type ?: 'Périodique',
+            'poids' => null,
+            'taille' => null,
+            'imc' => null,
+            'ta_systolique' => null,
+            'ta_diastolique' => null,
+            'pouls' => null,
+            'temperature' => null,
+            'glycemie' => null,
+            'spo2' => null,
+            'vision_droite' => null,
+            'vision_gauche' => null,
+            'audition_droite' => null,
+            'audition_gauche' => null,
+            'tour_taille' => null,
+            'notes_subjectives' => $visit->notes,
+            'notes_objectives' => null,
+            'evaluation' => $visit->notes,
+            'plan' => null,
+            'aptitude' => null,
+            'date_prochaine_visite' => null,
+            'doctor_name' => $visit->doctor ?: ($visit->medecin_nom ?: null),
+            'biometrics' => [
+                'weight' => null,
+                'height' => null,
+                'bmi' => null,
+                'bp_systolic' => null,
+                'bp_diastolic' => null,
+                'pulse' => null,
+                'temp' => null,
+                'glycemia' => null,
+                'spo2' => null,
+                'vision_right' => null,
+                'vision_left' => null,
+                'hearing_right' => null,
+                'hearing_left' => null,
+                'waist' => null,
+            ],
+            'soap' => [
+                'subjective' => $visit->notes,
+                'objective' => null,
+                'assessment' => $visit->notes,
+                'plan' => null,
+            ],
+            'is_fallback_from_visit' => true,
+            'employe' => null,
+            'visite' => [
+                'id' => $visit->id,
+                'date' => $visit->date,
+                'time' => $visit->time,
+                'type' => $visit->type,
+                'doctor' => $visit->doctor,
+                'medecin_nom' => $visit->medecin_nom,
+                'lieu' => $visit->lieu,
+            ],
+            'created_at' => $visit->created_at,
+            'updated_at' => $visit->updated_at,
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -262,6 +329,17 @@ class ExamenMedicalController extends Controller
             ->orderBy('date_examen', 'desc')
             ->get()
             ->map(fn (ExamenMedical $exam) => $this->formatExam($exam));
+
+        if ($items->isEmpty()) {
+            $visitFallback = Visite::query()
+                ->whereHas('employes', fn ($query) => $query->where('employes.id', $employeId))
+                ->orderBy('date', 'desc')
+                ->orderBy('time', 'desc')
+                ->get()
+                ->map(fn (Visite $visit) => $this->formatVisitFallback($visit, (int) $employeId));
+
+            return response()->json($visitFallback);
+        }
 
         return response()->json($items);
     }

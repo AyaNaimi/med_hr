@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import axios from 'axios';
 import { Card, Row, Col, Badge, Button, Form, Tabs, Tab, ProgressBar, Accordion, Table } from 'react-bootstrap';
 import '../Employe/DepartementManager.css';
 import '../GroupsManager.css';
@@ -59,6 +60,7 @@ const SSTConsultation = () => {
 
     const [step, setStep] = useState(0);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Filters for Step 0
     const [filterDept, setFilterDept] = useState('');
@@ -140,12 +142,12 @@ const SSTConsultation = () => {
         setSelectedDiseases(selectedDiseases.filter(d => d !== disease));
     };
 
-    const departments = ['Production', 'Logistique', 'RH', 'IT', 'Administration'];
-    const visits = [];
+    const [departments, setDepartments] = useState([]);
+    const [visits, setVisits] = useState([]);
+    const [patients, setPatients] = useState([]);
+    const [visitHistory, setVisitHistory] = useState([]);
 
-    const patients = [];
-
-    const visitHistory = [];
+    const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 
     const filteredVisits = useMemo(() => {
         return visits.filter(v => {
@@ -166,6 +168,46 @@ const SSTConsultation = () => {
         setTitle("Consultation Médicale");
         return () => clearActions();
     }, [setTitle, clearActions]);
+
+    useEffect(() => {
+        const fetchConsultationData = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/visites`);
+                const visitRows = Array.isArray(res.data) ? res.data : [];
+
+                const mappedVisits = visitRows.map((visit) => ({
+                    id: visit.id,
+                    label: `VIS-${String(visit.id).padStart(3, '0')}`,
+                    date: visit.date,
+                    status: visit.status === 'completed' || visit.status === 'Complété' ? 'Completed' : 'Planned',
+                    dept: visit.department || 'Non affecté',
+                    type: visit.type || 'Périodique',
+                    doctor: visit.doctor || visit.medecin_nom || 'Non renseigné',
+                }));
+
+                const mappedPatients = visitRows.flatMap((visit) =>
+                    (visit.employees || []).map((employee) => ({
+                        id: String(employee.id),
+                        employeeId: employee.id,
+                        name: employee.name || 'Employé',
+                        dept: employee.department || 'Non affecté',
+                        status: employee.status || 'En attente',
+                        visitId: visit.id,
+                        visitType: visit.type || 'Périodique',
+                        doctor: visit.doctor || visit.medecin_nom || 'Non renseigné',
+                    }))
+                );
+
+                setVisits(mappedVisits);
+                setPatients(mappedPatients);
+                setDepartments([...new Set(mappedPatients.map((patient) => patient.dept).filter(Boolean))]);
+            } catch (error) {
+                console.error('Erreur chargement consultation backend:', error);
+            }
+        };
+
+        fetchConsultationData();
+    }, [API_BASE_URL]);
 
     const getBMIInterpretation = (bmiValue) => {
         const bmi = parseFloat(bmiValue);
@@ -223,25 +265,138 @@ const SSTConsultation = () => {
         setPage(0);
     }, [selectedVisitId, filterDept, sidebarFilterDept, searchQuery, filteredVisits]);
 
-    const handleSelectPatient = (patient) => {
+    const mapExamToTimeline = (exam) => ({
+        id: exam.id,
+        date: exam.date_examen ? new Date(exam.date_examen).toISOString().slice(0, 10) : '-',
+        type: exam.motif || 'Périodique',
+        doctor: exam.doctor_name || exam.doctor || 'Non renseigné',
+        aptitude: exam.aptitude || 'En attente',
+        biometrics: {
+            imc: exam.biometrics?.bmi ?? exam.imc ?? '-',
+            bp: (exam.biometrics?.bp_systolic || exam.biometrics?.bp_diastolic)
+                ? `${exam.biometrics?.bp_systolic ?? '-'} / ${exam.biometrics?.bp_diastolic ?? '-'}`
+                : ((exam.ta_systolique || exam.ta_diastolique) ? `${exam.ta_systolique ?? '-'} / ${exam.ta_diastolique ?? '-'}` : '-'),
+            pulse: exam.biometrics?.pulse ?? exam.pouls ?? '-',
+        },
+        notes: {
+            subjective: exam.soap?.subjective ?? exam.notes_subjectives ?? '-',
+            assessment: exam.soap?.assessment ?? exam.evaluation ?? '-',
+        },
+        raw: exam,
+    });
+
+    const handleSelectPatient = async (patient) => {
         setSelectedPatient(patient);
         setStep(1);
-        // Load existing biometrics if any, or reset to defaults
-        setBiometrics({
-            weight: '',
-            height: '',
-            pulse: '',
-            bp_systolic: '',
-            bp_diastolic: '',
-            temperature: '',
-            glycemia: '',
-            vision_right: '',
-            vision_left: '',
-            spo2: '',
-            waist: '',
-            hearing_right: 'Normal',
-            hearing_left: 'Normal'
-        });
+
+        try {
+            const examsRes = await axios.get(`${API_BASE_URL}/api/employes/${patient.employeeId}/examens-medicaux`);
+            const exams = Array.isArray(examsRes.data) ? examsRes.data : [];
+            const timeline = exams.map(mapExamToTimeline);
+            setVisitHistory(timeline);
+
+            const latestExam = timeline[0]?.raw;
+            if (latestExam) {
+                setBiometrics({
+                    weight: latestExam.biometrics?.weight ?? latestExam.poids ?? '',
+                    height: latestExam.biometrics?.height ?? latestExam.taille ?? '',
+                    pulse: latestExam.biometrics?.pulse ?? latestExam.pouls ?? '',
+                    bp_systolic: latestExam.biometrics?.bp_systolic ?? latestExam.ta_systolique ?? '',
+                    bp_diastolic: latestExam.biometrics?.bp_diastolic ?? latestExam.ta_diastolique ?? '',
+                    temperature: latestExam.biometrics?.temp ?? latestExam.temperature ?? '',
+                    glycemia: latestExam.biometrics?.glycemia ?? latestExam.glycemie ?? '',
+                    vision_right: latestExam.biometrics?.vision_right ?? latestExam.vision_droite ?? '',
+                    vision_left: latestExam.biometrics?.vision_left ?? latestExam.vision_gauche ?? '',
+                    spo2: latestExam.biometrics?.spo2 ?? latestExam.spo2 ?? '',
+                    waist: latestExam.biometrics?.waist ?? latestExam.tour_taille ?? '',
+                    hearing_right: latestExam.biometrics?.hearing_right ?? latestExam.audition_droite ?? 'Normal',
+                    hearing_left: latestExam.biometrics?.hearing_left ?? latestExam.audition_gauche ?? 'Normal'
+                });
+
+                setClinicalNotes({
+                    subjective: latestExam.soap?.subjective ?? latestExam.notes_subjectives ?? '',
+                    objective: latestExam.soap?.objective ?? latestExam.notes_objectives ?? '',
+                    assessment: latestExam.soap?.assessment ?? latestExam.evaluation ?? '',
+                    plan: latestExam.soap?.plan ?? latestExam.plan ?? '',
+                    recent_history: '',
+                    special_tests: ''
+                });
+                setAptitude(latestExam.aptitude ?? null);
+            } else {
+                setBiometrics({
+                    weight: '',
+                    height: '',
+                    pulse: '',
+                    bp_systolic: '',
+                    bp_diastolic: '',
+                    temperature: '',
+                    glycemia: '',
+                    vision_right: '',
+                    vision_left: '',
+                    spo2: '',
+                    waist: '',
+                    hearing_right: 'Normal',
+                    hearing_left: 'Normal'
+                });
+                setClinicalNotes({
+                    subjective: '',
+                    objective: '',
+                    assessment: '',
+                    plan: '',
+                    recent_history: '',
+                    special_tests: ''
+                });
+                setAptitude(null);
+            }
+        } catch (error) {
+            console.error('Erreur chargement historique examens:', error);
+            setVisitHistory([]);
+        }
+    };
+
+    const saveCurrentExam = async () => {
+        if (!selectedPatient) return;
+
+        setIsSaving(true);
+        try {
+            const payload = {
+                visite_id: selectedPatient.visitId,
+                employe_id: selectedPatient.employeeId,
+                date_examen: new Date().toISOString(),
+                motif: selectedPatient.visitType || 'Périodique',
+                doctor_name: selectedPatient.doctor || null,
+                biometrics: {
+                    weight: biometrics.weight || null,
+                    height: biometrics.height || null,
+                    bmi: bmiValue !== '---' ? Number(bmiValue) : null,
+                    bp_systolic: biometrics.bp_systolic || null,
+                    bp_diastolic: biometrics.bp_diastolic || null,
+                    pulse: biometrics.pulse || null,
+                    temp: biometrics.temperature || null,
+                    glycemia: biometrics.glycemia || null,
+                    spo2: biometrics.spo2 || null,
+                    vision_right: biometrics.vision_right || null,
+                    vision_left: biometrics.vision_left || null,
+                    hearing_right: biometrics.hearing_right || null,
+                    hearing_left: biometrics.hearing_left || null,
+                    waist: biometrics.waist || null,
+                },
+                soap: {
+                    subjective: clinicalNotes.subjective || null,
+                    objective: clinicalNotes.objective || null,
+                    assessment: clinicalNotes.assessment || null,
+                    plan: clinicalNotes.plan || null,
+                },
+                aptitude: aptitude || null,
+            };
+
+            await axios.post(`${API_BASE_URL}/api/examens-medicaux`, payload, {
+                headers: { Accept: 'application/json' },
+                withCredentials: true,
+            });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const columns = [
@@ -736,6 +891,7 @@ const SSTConsultation = () => {
                                         </Button>
                                         <Button
                                             className="btn-primary-teal rounded-pill px-4 extra-small fw-black shadow-sm border-0"
+                                            disabled={isSaving}
                                             onClick={() => {
                                                 Swal.fire({
                                                     title: "Valider l'examen ?",
@@ -743,7 +899,30 @@ const SSTConsultation = () => {
                                                     icon: "question",
                                                     showCancelButton: true,
                                                     confirmButtonText: "Oui, valider"
-                                                }).then(r => r.isConfirmed && (setStep(0), setSelectedPatient(null)));
+                                                }).then(async (r) => {
+                                                    if (!r.isConfirmed) return;
+
+                                                    try {
+                                                        await saveCurrentExam();
+                                                        setPatients(prev => prev.map((patient) =>
+                                                            patient.employeeId === selectedPatient?.employeeId && patient.visitId === selectedPatient?.visitId
+                                                                ? { ...patient, status: 'Complété' }
+                                                                : patient
+                                                        ));
+                                                        Swal.fire('Succès', 'Examen enregistré avec succès.', 'success');
+                                                        setStep(0);
+                                                        setSelectedPatient(null);
+                                                    } catch (error) {
+                                                        const validationErrors = error.response?.data?.errors
+                                                            ? Object.values(error.response.data.errors).flat().join('\n')
+                                                            : null;
+                                                        Swal.fire(
+                                                            'Erreur',
+                                                            validationErrors || error.response?.data?.message || "Échec de l'enregistrement de l'examen.",
+                                                            'error'
+                                                        );
+                                                    }
+                                                });
                                             }}
                                         >
                                             TERMINER & CLOTURER
