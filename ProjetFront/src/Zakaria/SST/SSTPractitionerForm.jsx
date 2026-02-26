@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { User, Stethoscope, Briefcase, Phone, Mail, Upload, FileText, Camera, ZoomIn } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
-    const [formData, setFormData] = useState({
-        name: initialData?.name || '',
-        firstName: initialData?.firstName || '',
-        specialty: initialData?.specialty || '',
-        type: initialData?.type || '',
-        phone: initialData?.phone || '',
-        email: initialData?.email || '',
+    const buildInitialFormData = (data) => ({
+        name: data?.name || data?.nom || '',
+        firstName: data?.firstName || data?.first_name || data?.prenom || '',
+        specialty: data?.specialty || data?.specialite || '',
+        type: data?.type || '',
+        phone: data?.phone || data?.telephone || '',
+        email: data?.email || '',
         photo: null,
         diplome: null,
         otherDocs: null
     });
 
+    const [formData, setFormData] = useState(buildInitialFormData(initialData));
+
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
+
+    useEffect(() => {
+        setFormData(buildInitialFormData(initialData));
+        setValidationErrors({});
+        setError('');
+    }, [initialData]);
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
@@ -316,7 +324,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                                     value={formData.name}
                                     onChange={handleChange}
                                     className={`form-control-enhanced ${validationErrors.name ? 'is-invalid' : ''}`}
-                                    placeholder="Nom du praticien"
+                                    placeholder={initialData?.name || initialData?.nom || 'Nom du praticien'}
                                 />
                                 {validationErrors.name && <span className="error-message">{validationErrors.name}</span>}
                             </div>
@@ -332,7 +340,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                                     value={formData.firstName}
                                     onChange={handleChange}
                                     className={`form-control-enhanced ${validationErrors.firstName ? 'is-invalid' : ''}`}
-                                    placeholder="Prénom du praticien"
+                                    placeholder={initialData?.firstName || initialData?.first_name || initialData?.prenom || 'Prénom du praticien'}
                                 />
                                 {validationErrors.firstName && <span className="error-message">{validationErrors.firstName}</span>}
                             </div>
@@ -348,7 +356,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                                     value={formData.specialty}
                                     onChange={handleChange}
                                     className={`form-control-enhanced ${validationErrors.specialty ? 'is-invalid' : ''}`}
-                                    placeholder="Ex: Généraliste, Travail..."
+                                    placeholder={initialData?.specialty || initialData?.specialite || 'Ex: Généraliste, Travail...'}
                                 />
                                 {validationErrors.specialty && <span className="error-message">{validationErrors.specialty}</span>}
                             </div>
@@ -382,7 +390,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                                     value={formData.phone}
                                     onChange={handleChange}
                                     className="form-control-enhanced"
-                                    placeholder="06..."
+                                    placeholder={initialData?.phone || initialData?.telephone || '06...'}
                                 />
                             </div>
 
@@ -397,7 +405,7 @@ const SSTPractitionerForm = ({ onSubmit, onCancel, initialData }) => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="form-control-enhanced"
-                                    placeholder="exemple@med.com"
+                                    placeholder={initialData?.email || 'exemple@med.com'}
                                 />
                             </div>
 

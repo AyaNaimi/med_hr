@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Button, Badge, Form, Row, Col } from 'react-bootstrap';
 import { User, Mail, Phone, Stethoscope, Briefcase, PlusCircle, UserPlus, FileText, Filter as FilterIcon, X, Settings } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,6 +22,7 @@ const SSTPractitioners = () => {
     const { dynamicStyles, isMobile } = useOpen();
 
     const [practitioners, setPractitioners] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const [filteredData, setFilteredData] = useState(practitioners);
     const [page, setPage] = useState(0);
@@ -36,6 +38,22 @@ const SSTPractitioners = () => {
         status: ''
     });
 
+    const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+
+    const resolveFileUrl = (value) => {
+        if (!value) return null;
+        if (typeof value !== 'string') return URL.createObjectURL(value);
+        if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('blob:') || value.startsWith('data:')) {
+            return value;
+        }
+
+        const normalized = value.replace(/^\/+/, '');
+        if (normalized.startsWith('storage/')) {
+            return `${API_BASE_URL}/${normalized}`;
+        }
+        return `${API_BASE_URL}/storage/${normalized}`;
+    };
+
     // Dynamic configuration of form fields
 
     useEffect(() => {
@@ -44,6 +62,34 @@ const SSTPractitioners = () => {
             clearActions();
         };
     }, [setTitle, clearActions]);
+
+    useEffect(() => {
+        const loadPractitioners = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get(`${API_BASE_URL}/api/sst-practitioners`, {
+                    headers: { Accept: 'application/json' },
+                });
+
+                const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
+                const normalized = data.map(p => ({
+                    ...p,
+                    firstName: p.firstName || p.first_name || p.prenom || '',
+                    name: p.name || p.nom || '',
+                    otherDocs: p.otherDocs || p.other_docs || [],
+                }));
+                setPractitioners(normalized);
+                setFilteredData(normalized);
+            } catch (err) {
+                console.error('Load practitioners failed', err);
+                Swal.fire('Erreur', "Impossible de charger les praticiens (API)", 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadPractitioners();
+    }, []);
 
     useEffect(() => {
         let filtered = [...practitioners];
@@ -104,8 +150,19 @@ const SSTPractitioners = () => {
             cancelButtonText: "Annuler"
         }).then((result) => {
             if (result.isConfirmed) {
+                const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+                const token = localStorage.getItem('API_TOKEN');
+
+                axios.delete(`${API_BASE_URL}/api/sst-practitioners/${id}`, {
+                    headers: {
+                        Accept: 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    withCredentials: true,
+                }).catch(err => console.error('Delete practitioner failed', err));
+
                 setPractitioners(practitioners.filter(p => p.id !== id));
-                Swal.fire("Supprimé !", "Le praticien a été supprimé.", "success");
+                Swal.fire("Supprimé !", "Le praticien a été supprimé en base.", "success");
             }
         });
     };
@@ -120,29 +177,91 @@ const SSTPractitioners = () => {
             confirmButtonText: "Supprimer"
         }).then((result) => {
             if (result.isConfirmed) {
+                const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+                const token = localStorage.getItem('API_TOKEN');
+
+                // Fire-and-forget API deletes; main goal is not leaving ghosts in DB
+                selectedItems.forEach(id => {
+                    axios.delete(`${API_BASE_URL}/api/sst-practitioners/${id}`, {
+                        headers: {
+                            Accept: 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        },
+                        withCredentials: true,
+                    }).catch(err => console.error('Bulk delete practitioner failed', err));
+                });
+
                 setPractitioners(practitioners.filter(p => !selectedItems.includes(p.id)));
                 setSelectedItems([]);
                 setSelectAll(false);
-                Swal.fire("Supprimé", "Les praticiens ont été supprimés.", "success");
+                Swal.fire("Supprimé", "Les praticiens ont été supprimés en base.", "success");
             }
         });
     };
 
-    const handleSubmit = (formData) => {
-        if (editingPractitioner) {
-            setPractitioners(practitioners.map(p => p.id === editingPractitioner.id ? { ...p, ...formData } : p));
-            Swal.fire("Succès !", "Praticien modifié avec succès.", "success");
-        } else {
-            const newPractitioner = {
-                id: practitioners.length + 1,
-                ...formData,
-                status: 'En attente'
-            };
-            setPractitioners([...practitioners, newPractitioner]);
-            Swal.fire("Succès !", "Praticien ajouté avec succès.", "success");
+    const handleSubmit = async (formData) => {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+        const token = localStorage.getItem('API_TOKEN');
+
+        const fd = new FormData();
+        fd.append('name', formData.name);
+        fd.append('firstName', formData.firstName);
+        fd.append('specialty', formData.specialty);
+        fd.append('type', formData.type);
+        if (formData.phone) fd.append('phone', formData.phone);
+        if (formData.email) fd.append('email', formData.email);
+        if (formData.photo) fd.append('photo', formData.photo);
+        if (formData.diplome) fd.append('diplome', formData.diplome);
+        if (formData.otherDocs) {
+            (Array.isArray(formData.otherDocs) ? formData.otherDocs : [formData.otherDocs]).forEach(file => {
+                if (file) fd.append('otherDocs[]', file);
+            });
         }
-        setShowForm(false);
-        setEditingPractitioner(null);
+
+        try {
+            setLoading(true);
+            let res;
+            if (editingPractitioner) {
+                res = await axios.post(`${API_BASE_URL}/api/sst-practitioners/${editingPractitioner.id}`, fd, {
+                    headers: {
+                        Accept: 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    withCredentials: true,
+                });
+            } else {
+                res = await axios.post(`${API_BASE_URL}/api/sst-practitioners`, fd, {
+                    headers: {
+                        Accept: 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    withCredentials: true,
+                });
+            }
+
+            const saved = res.data;
+            const normalized = {
+                ...saved,
+                firstName: saved.firstName || saved.first_name || saved.prenom || '',
+                name: saved.name || saved.nom || '',
+                otherDocs: saved.otherDocs || saved.other_docs || [],
+            };
+
+            if (editingPractitioner) {
+                setPractitioners(prev => prev.map(p => p.id === editingPractitioner.id ? normalized : p));
+            } else {
+                setPractitioners(prev => [...prev, normalized]);
+            }
+
+            setShowForm(false);
+            setEditingPractitioner(null);
+            Swal.fire('Succès !', 'Praticien enregistré en base.', 'success');
+        } catch (err) {
+            console.error('Save practitioner failed', err);
+            Swal.fire('Erreur', err.response?.data?.message || "Échec d'enregistrement", 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleZoomImage = (imageUrl, title) => {
@@ -170,7 +289,7 @@ const SSTPractitioners = () => {
             key: 'practitioner',
             label: 'Praticien',
             render: (item) => {
-                const imageUrl = item.photo ? (typeof item.photo === 'string' ? item.photo : URL.createObjectURL(item.photo)) : null;
+                const imageUrl = resolveFileUrl(item.photo);
                 const fullName = `Dr. ${item.firstName} ${item.name}`;
                 return (
                     <div className="d-flex align-items-center gap-3">
@@ -219,7 +338,10 @@ const SSTPractitioners = () => {
                                 size="sm"
                                 className="px-2 py-1 d-flex align-items-center gap-1"
                                 title="Voir le diplôme"
-                                onClick={() => window.open(typeof item.diplome === 'string' ? item.diplome : URL.createObjectURL(item.diplome), '_blank')}
+                                onClick={() => {
+                                    const url = resolveFileUrl(item.diplome);
+                                    if (url) window.open(url, '_blank');
+                                }}
                             >
                                 <FileText size={14} /> <span className="extra-small fw-bold">DIPLÔME</span>
                             </Button>
@@ -231,7 +353,10 @@ const SSTPractitioners = () => {
                                 size="sm"
                                 className="px-2 py-1 d-flex align-items-center gap-1"
                                 title={`Document ${index + 1}`}
-                                onClick={() => window.open(typeof doc === 'string' ? doc : URL.createObjectURL(doc), '_blank')}
+                                onClick={() => {
+                                    const url = resolveFileUrl(doc);
+                                    if (url) window.open(url, '_blank');
+                                }}
                             >
                                 <Briefcase size={14} /> <span className="extra-small fw-bold">DOC {index + 1}</span>
                             </Button>

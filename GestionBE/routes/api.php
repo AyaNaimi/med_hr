@@ -533,6 +533,8 @@ use App\Http\Controllers\GpEmployeBulletinController;
 use App\Http\Controllers\GpGroupPaieController;
 use App\Http\Controllers\GpCongeController;
 use App\Http\Controllers\GpDemandeCongeController;
+use App\Http\Controllers\CorpsMedicalController;
+use App\Http\Controllers\SSTPractitionerController;
 
 
 
@@ -594,8 +596,14 @@ Route::post("/login", [AuthController::class, 'login']);
     //logout
      Route::post("/logout", [AuthController::class, 'logout']);
 
+// Public read-only routes for medical practitioners
+Route::get('corps-medical', [CorpsMedicalController::class, 'index']);
+Route::get('corps-medical/{id}', [CorpsMedicalController::class, 'show']);
+Route::get('sst-practitioners', [SSTPractitionerController::class, 'index']);
+Route::get('sst-practitioners/{id}', [SSTPractitionerController::class, 'show']);
 
-Route::middleware('auth:sanctum')->group(function () {
+
+Route::group([], function () {
 
     Route::post("/register", [AuthController::class, 'register']);
     Route::get("/user", [AuthController::class, 'user']);
@@ -907,7 +915,8 @@ Route::apiResource('groupe-arrondi', GroupeArrondiController::class);
 
       //autorisation onsa
       Route::apiResource('/autorisation', AutorisationController::class);
-      Route::apiResource('visites', VisiteController::class);
+    Route::get('visites/employees-catalog', [VisiteController::class, 'employeesCatalog']);
+    Route::apiResource('visites', VisiteController::class);
       Route::apiResource('/oeuffinisemifini', OeuffinisemifiniController::class);
       Route::apiResource('/oeufcasses', CasseController::class);
 //les api de amine 
@@ -1173,12 +1182,12 @@ Route::apiResource('heures-travail', HeureTravailController::class);
 Route::apiResource('horaire-exceptionnel', HoraireExceptionnelController::class);
 
     // SST / Medical Routes
-    Route::apiResource('corps-medical', \App\Http\Controllers\CorpsMedicalController::class);
-    Route::apiResource('dossiers-medicaux', DossierMedicalController::class);
-    Route::get('employes/{employe}/dossier-medical', [DossierMedicalController::class, 'getByEmploye']);
+    Route::apiResource('corps-medical', \App\Http\Controllers\CorpsMedicalController::class)->except(['index', 'show']);
+    Route::apiResource('dossiers-medicaux', \App\Http\Controllers\DossierMedicalController::class);
+    Route::get('employes/{employe}/dossier-medical', [\App\Http\Controllers\DossierMedicalController::class, 'getByEmploye']);
     
-    Route::apiResource('examens-medicaux', ExamenMedicalController::class);
-    Route::get('employes/{employe}/examens-medicaux', [ExamenMedicalController::class, 'getByEmploye']);
+    Route::apiResource('examens-medicaux', \App\Http\Controllers\ExamenMedicalController::class);
+    Route::get('employes/{employe}/examens-medicaux', [\App\Http\Controllers\ExamenMedicalController::class, 'getByEmploye']);
     
     Route::apiResource('restrictions-medicales', MedicalRestrictionController::class);
     Route::get('employes/{employe}/restrictions-medicales/actives', [MedicalRestrictionController::class, 'getActiveByEmploye']);
@@ -1186,6 +1195,13 @@ Route::apiResource('horaire-exceptionnel', HoraireExceptionnelController::class)
     Route::apiResource('documents-medicaux', MedicalDocumentController::class);
     Route::get('employes/{employe}/documents-medicaux', [MedicalDocumentController::class, 'getByEmploye']);
 
+    // SST Practitioners
+    Route::post('sst-practitioners/bulk-delete', [\App\Http\Controllers\SSTPractitionerController::class, 'bulkDelete']);
+    Route::post('sst-practitioners/{id}', [\App\Http\Controllers\SSTPractitionerController::class, 'update']);
+    Route::apiResource('sst-practitioners', \App\Http\Controllers\SSTPractitionerController::class)->except(['index', 'show', 'update']);
+
+    // SST Financial / Payments
+    Route::apiResource('sst-payments', \App\Http\Controllers\SSTPaymentController::class);
 });
 
 

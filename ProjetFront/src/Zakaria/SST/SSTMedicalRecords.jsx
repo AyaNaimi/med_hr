@@ -67,12 +67,70 @@ const SSTMedicalRecords = React.forwardRef(({
 
     const [columnVisibility, setColumnVisibility] = useState(getInitialColumnVisibility());
 
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+    const normalizeRecord = useCallback((record) => {
+        const history = Array.isArray(record?.history) ? record.history : [];
+        const fallbackHistory = record?.latest_visit ? [record.latest_visit] : [];
+        const safeHistory = history.length > 0 ? history : fallbackHistory;
+
+        return {
+            ...record,
+            id: String(record?.id ?? record?.matricule ?? record?.employe_id ?? ''),
+            name: record?.name || 'Employé',
+            dept: record?.dept || 'Non affecté',
+            status: record?.status || 'En attente',
+            lastVisit: record?.lastVisit || record?.latest_visit?.date || '-',
+            history: safeHistory,
+            vitals: {
+                bmi: record?.vitals?.bmi ?? '-',
+                bp: record?.vitals?.bp ?? '-',
+                weight: record?.vitals?.weight ?? '-',
+                height: record?.vitals?.height ?? '-',
+                pulse: record?.vitals?.pulse ?? '-',
+                temperature: record?.vitals?.temperature ?? '-',
+                spo2: record?.vitals?.spo2 ?? '-',
+                glycemia: record?.vitals?.glycemia ?? '-',
+            },
+        };
+    }, []);
+
     useEffect(() => {
-        setTitle("Dossiers Médicaux");
+        setTitle("Dossiers Médicaux SST");
+        const fetchRecords = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/dossiers-medicaux`);
+                const records = Array.isArray(res.data) ? res.data : [];
+
+                const enriched = await Promise.all(records.map(async (record) => {
+                    const currentHistory = Array.isArray(record?.history) ? record.history : [];
+                    if (currentHistory.length > 0 || record?.latest_visit) {
+                        return normalizeRecord(record);
+                    }
+
+                    const identifier = record?.employe_id || record?.matricule || record?.id;
+                    if (!identifier) {
+                        return normalizeRecord(record);
+                    }
+
+                    try {
+                        const detailsRes = await axios.get(`${API_BASE_URL}/api/employes/${identifier}/dossier-medical`);
+                        return normalizeRecord(detailsRes.data || record);
+                    } catch {
+                        return normalizeRecord(record);
+                    }
+                }));
+
+                setMedicalRecords(enriched);
+            } catch (err) {
+                console.error('Error fetching medical records:', err);
+            }
+        };
+        fetchRecords();
         return () => {
             clearActions();
         };
-    }, [setTitle, clearActions]);
+    }, [setTitle, clearActions, API_BASE_URL, normalizeRecord]);
 
     const [mainFilters, setMainFilters] = useState({
         dept: '',

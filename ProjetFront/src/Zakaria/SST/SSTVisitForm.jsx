@@ -1,10 +1,69 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';
 import { Card, Form, Button, Alert, Spinner, Table, Badge, InputGroup } from 'react-bootstrap';
 import { User, Clock, Stethoscope, FileText, Search, Users, Filter, X } from 'lucide-react';
 
 const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
-    // List of employees for selection (should be fetched from parent or API)
-    const availableEmployees = [];
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+    const [availableEmployees, setAvailableEmployees] = useState([]);
+    
+    // Fetch doctors from SSTPractitioner API
+    const [doctorsList, setDoctorsList] = useState([]);
+    
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/api/sst-practitioners`, {
+                    headers: { Accept: 'application/json' },
+                    withCredentials: true,
+                });
+
+                const data = response.data;
+                const practitioners = Array.isArray(data) ? data : (data.data || []);
+
+                const formattedDoctors = practitioners.map(doc => {
+                    const name = doc.name || doc.nom || '';
+                    const firstName = doc.first_name || doc.firstName || doc.prenom || '';
+                    return `Dr. ${name} ${firstName}`.trim();
+                });
+
+                if (formattedDoctors.length === 0) {
+                    console.warn('No practitioners found in API response');
+                }
+
+                setDoctorsList(formattedDoctors);
+            } catch (error) {
+                setError("Impossible de charger les médecins. Merci de réessayer.");
+                console.error('Erreur lors du chargement des médecins', error);
+            }
+        };
+
+        const fetchEmployees = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/api/visites/employees-catalog`, {
+                    headers: { Accept: 'application/json' },
+                    withCredentials: true,
+                });
+
+                const payload = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+                const normalizedEmployees = payload.map((employee) => ({
+                    id: employee.id,
+                    name: employee.name || employee.full_name || `${employee.prenom || ''} ${employee.nom || ''}`.trim(),
+                    department: employee.department || employee.departement || '',
+                    lastVisitDate: employee.lastVisitDate || employee.last_visit_date || null,
+                }));
+
+                setAvailableEmployees(normalizedEmployees);
+            } catch (error) {
+                setError((prev) => prev || "Impossible de charger les collaborateurs.");
+                console.error('Erreur lors du chargement des collaborateurs', error);
+            }
+        };
+
+        fetchDoctors();
+        fetchEmployees();
+    }, [API_BASE_URL]);
 
     // Helper function to determine priority status based on last visit date
     const getEmployeePriority = (lastVisitDate) => {
@@ -68,12 +127,13 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
 
     const filteredEmployees = useMemo(() => {
         return availableEmployees.filter(emp => {
-            const matchesSearch = emp.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                emp.id.toLowerCase().includes(filters.search.toLowerCase());
+            const search = filters.search.toLowerCase();
+            const matchesSearch = (emp.name || '').toLowerCase().includes(search) ||
+                String(emp.id || '').toLowerCase().includes(search);
             const matchesDept = !filters.department || emp.department === filters.department;
             return matchesSearch && matchesDept;
         });
-    }, [filters]);
+    }, [availableEmployees, filters]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -385,8 +445,8 @@ const SSTVisitForm = ({ onSubmit, onCancel, initialData }) => {
                                 className={`form-control-enhanced ${validationErrors.doctors ? 'is-invalid' : ''}`}
                             >
                                 <option value="">Sélectionner un médecin</option>
-                                {['Dr. Martin', 'Dr. Dupont', 'Dr. Leroy', 'Dr. Bernard'].map(doc => (
-                                    <option key={doc} value={doc}>{doc}</option>
+                                {doctorsList.map((doc, index) => (
+                                    <option key={index} value={doc}>{doc}</option>
                                 ))}
                             </Form.Select>
                             {validationErrors.doctors && <span className="error-message">{validationErrors.doctors}</span>}

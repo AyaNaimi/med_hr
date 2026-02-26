@@ -36,6 +36,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 import { useHeader } from "../../Acceuil/HeaderContext";
 import { useOpen } from "../../Acceuil/OpenProvider";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -55,6 +56,8 @@ const SSTVisits = () => {
     const { dynamicStyles, isMobile } = useOpen();
 
     const [visitsData, setVisitsData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     const [expandedRows, setExpandedRows] = useState({});
 
@@ -98,9 +101,9 @@ const SSTVisits = () => {
     const [selectedEmployeeForDossier, setSelectedEmployeeForDossier] = useState(null);
 
     const [biometrics, setBiometrics] = useState({
-        weight: '75', height: '175', pulse: '72', bp_systolic: '120', bp_diastolic: '80',
-        temperature: '36.6', glycemia: '0.95', vision_right: '10', vision_left: '10',
-        spo2: '98', waist: '90', hearing_right: 'Normal', hearing_left: 'Normal'
+        weight: '', height: '', pulse: '', bp_systolic: '', bp_diastolic: '',
+        temperature: '', glycemia: '', vision_right: '', vision_left: '',
+        spo2: '', waist: '', hearing_right: 'Normal', hearing_left: 'Normal'
     });
 
     const [clinicalNotes, setClinicalNotes] = useState({
@@ -108,6 +111,14 @@ const SSTVisits = () => {
     });
 
     const [aptitude, setAptitude] = useState(null);
+
+    const doctorFilterOptions = useMemo(() => {
+        return Array.from(new Set(
+            (visitsData || [])
+                .map(v => v.doctor)
+                .filter(Boolean)
+        )).map((doctor) => ({ label: doctor, value: doctor }));
+    }, [visitsData]);
 
     const processedVisits = useMemo(() => {
         return visitsData.map(visit => {
@@ -170,11 +181,24 @@ const SSTVisits = () => {
 
 
     useEffect(() => {
-        setTitle("Visites Médicales");
+        setTitle("Visites Médicales SST");
+        const fetchVisits = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get(`${API_BASE_URL}/api/visites`);
+                setVisitsData(res.data);
+            } catch (err) {
+                console.error('Error fetching visits:', err);
+                Swal.fire('Erreur', 'Impossible de charger les visites', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchVisits();
         return () => {
             clearActions();
         };
-    }, [setTitle, clearActions]);
+    }, [setTitle, clearActions, API_BASE_URL]);
 
 
     useEffect(() => {
@@ -206,32 +230,40 @@ const SSTVisits = () => {
         setFilteredData(filtered);
     }, [searchQuery, processedVisits, visitFilters]);
 
-    const handleCreateVisit = (formData) => {
-        // Transform selectedEmployees (IDs) back to full employee objects for the UI
-        const selectedEmployeeObjects = employees.filter(e => formData.selectedEmployees.includes(e.id));
-
-        const visitToSave = {
-            ...formData,
-            employees: selectedEmployeeObjects
-        };
-        // Clean up internal form field
-        delete visitToSave.selectedEmployees;
-
-        if (editingVisit) {
-            setVisitsData(visitsData.map(v => v.id === editingVisit.id ? { ...v, ...visitToSave } : v));
-            Swal.fire("Mis à jour", "La visite a été mis à jour avec succès.", "success");
-        } else {
-            const newVisit = {
-                id: `VST-00${visitsData.length + 1}`,
-                ...visitToSave,
-                progress: 0,
-                status: 'planifiée'
+    const handleCreateVisit = async (formData) => {
+        try {
+            setLoading(true);
+            const payload = {
+                ...formData,
+                selectedEmployees: formData.selectedEmployees // backend handles this
             };
-            setVisitsData([newVisit, ...visitsData]);
-            Swal.fire("Succès", "La visite a été programmée avec succès.", "success");
+
+            if (editingVisit) {
+                const res = await axios.put(`${API_BASE_URL}/api/visites/${editingVisit.id}`, payload);
+                setVisitsData(visitsData.map(v => v.id === editingVisit.id ? res.data : v));
+                Swal.fire("Mis à jour", "La visite a été mise à jour avec succès.", "success");
+            } else {
+                const res = await axios.post(`${API_BASE_URL}/api/visites`, payload);
+                setVisitsData([res.data, ...visitsData]);
+                Swal.fire("Succès", "La visite a été programmée avec succès.", "success");
+            }
+            setShowForm(false);
+            setEditingVisit(null);
+        } catch (err) {
+            console.error('Save visit failed', err);
+            const backendMessage = err.response?.data?.message;
+            const validationErrors = err.response?.data?.errors
+                ? Object.values(err.response.data.errors).flat().join('\n')
+                : null;
+
+            Swal.fire(
+                'Erreur',
+                validationErrors || backendMessage || 'Échec de l\'enregistrement de la visite',
+                'error'
+            );
+        } finally {
+            setLoading(false);
         }
-        setShowForm(false);
-        setEditingVisit(null);
     };
 
     const handleDelete = (id) => {
@@ -245,10 +277,19 @@ const SSTVisits = () => {
             cancelButtonColor: "#3085d6",
             confirmButtonText: "Oui, supprimer",
             cancelButtonText: "Annuler"
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                setVisitsData(visitsData.filter(v => v.id !== id));
-                Swal.fire("Supprimé !", "La visite a été supprimée.", "success");
+                try {
+                    setLoading(true);
+                    await axios.delete(`${API_BASE_URL}/api/visites/${id}`);
+                    setVisitsData(visitsData.filter(v => v.id !== id));
+                    Swal.fire("Supprimé !", "La visite a été supprimée.", "success");
+                } catch (err) {
+                    console.error('Delete visit failed', err);
+                    Swal.fire('Erreur', 'Échec de la suppression', 'error');
+                } finally {
+                    setLoading(false);
+                }
             }
         });
     };
@@ -760,12 +801,7 @@ const SSTVisits = () => {
                                                     label: 'Médecin',
                                                     value: visitFilters.doctor,
                                                     type: 'select',
-                                                    options: [
-                                                        { label: 'Dr. Martin', value: 'Dr. Martin' },
-                                                        { label: 'Dr. Dupont', value: 'Dr. Dupont' },
-                                                        { label: 'Dr. Leroy', value: 'Dr. Leroy' },
-                                                        { label: 'Dr. Bernard', value: 'Dr. Bernard' }
-                                                    ],
+                                                    options: doctorFilterOptions,
                                                     placeholder: 'Tous les médecins'
                                                 },
                                                 {

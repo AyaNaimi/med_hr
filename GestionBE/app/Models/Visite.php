@@ -11,13 +11,29 @@ class Visite extends Model
 
     protected $fillable = [
         'date',
+        'time',
         'type',
         'statut',
-        'emplacement',
+        'emplacement', 
         'lieu',
         'medecin_nom',
+        'doctor',
         'notes',
+        'practitioner_id',
+        'unit_cost',
+        'total_cost',
+        'payment_status',
     ];
+
+    public function practitioner()
+    {
+        return $this->belongsTo(SSTPractitioner::class, 'practitioner_id');
+    }
+
+    public function payments()
+    {
+        return $this->belongsToMany(SSTPayment::class, 'sst_payment_visit');
+    }
 
     public function employes()
     {

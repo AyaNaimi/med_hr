@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Card, Form, Button, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { Activity, Stethoscope, FileText, CheckCircle, AlertCircle, Clock, Scale, Eye, Heart, Thermometer, Droplets, Ear, AlertTriangle, XCircle, Pill, ClipboardList, Hospital } from 'lucide-react';
 
@@ -35,16 +36,43 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     if (!employee) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setTimeout(() => {
-            onValidate(examData);
+        try {
+            setLoading(true);
+            setError('');
+
+            const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+            const payload = {
+                visite_id: employee.visitId || null,
+                employe_id: employee.id,
+                date_examen: new Date().toISOString(),
+                biometrics: examData.biometrics,
+                soap: examData.soap,
+                aptitude: examData.aptitude,
+                decisionDetails: examData.decisionDetails,
+                doctor_name: employee.doctor || employee.doctor_name || null,
+                motif: employee.type || 'Périodique',
+            };
+
+            const response = await axios.post(`${API_BASE_URL}/api/examens-medicaux`, payload, {
+                headers: { Accept: 'application/json' },
+                withCredentials: true,
+            });
+
+            onValidate(response.data);
+        } catch (err) {
+            const validationErrors = err.response?.data?.errors
+                ? Object.values(err.response.data.errors).flat().join('\n')
+                : null;
+            setError(validationErrors || err.response?.data?.message || "Échec de l'enregistrement de l'examen.");
+        } finally {
             setLoading(false);
-        }, 800);
+        }
     };
 
     const getBMIInterpretation = (bmiValue) => {
@@ -420,6 +448,8 @@ const SSTExaminationPanel = ({ employee, onValidate, onCancel }) => {
                             onChange={e => setExamData({ ...examData, soap: { ...examData.soap, assessment: e.target.value } })}
                         />
                     </div>
+
+                    {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
                 </div>
 
                 <div className="sst-form-footer">

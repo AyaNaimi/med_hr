@@ -12,6 +12,7 @@ import {
     Upload,
     Filter as FilterIcon
 } from 'lucide-react';
+import axios from 'axios';
 import { useHeader } from "../../Acceuil/HeaderContext";
 import { useOpen } from "../../Acceuil/OpenProvider";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -32,6 +33,7 @@ const SSTFinancialManagement = () => {
     const [activeTab, setActiveTab] = useState('doctors');
     const [showForm, setShowForm] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
         startDate: '',
         endDate: '',
@@ -47,12 +49,57 @@ const SSTFinancialManagement = () => {
 
     // --- DATA ---
     const [doctors, setDoctors] = useState([]);
-
     const [visitCosts, setVisitCosts] = useState([]);
 
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const [docsRes, visitsRes] = await Promise.all([
+                axios.get(`${API_BASE_URL}/api/sst-practitioners`),
+                axios.get(`${API_BASE_URL}/api/visites`)
+            ]);
+
+            const normalizedDocs = docsRes.data.map(doc => ({
+                id: doc.id,
+                name: `Dr. ${doc.first_name} ${doc.name}`,
+                contract: doc.contract_type || 'N/A',
+                payment: doc.remuneration_amount ? `${doc.remuneration_amount} DH / ${doc.remuneration_type === 'fixed' ? 'Mois' : 'Visite'}` : 'Non défini',
+                service: doc.service || 'Non affecté',
+                original: doc
+            }));
+
+            const normalizedVisits = visitsRes.data.map(v => ({
+                id: `VST-${v.id}`,
+                db_id: v.id,
+                doctor: v.doctor || 'Inconnu',
+                date: v.date,
+                employees: v.employes ? v.employes.length : 0,
+                totalCost: v.total_cost ? `${v.total_cost} DH` : '0 DH',
+                status: v.payment_status || 'En attente',
+                department: v.lieu || 'N/A'
+            }));
+
+            setDoctors(normalizedDocs);
+            setVisitCosts(normalizedVisits);
+        } catch (err) {
+            console.error('Error loading SST financial data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        setTitle("Suivi RH & Budget SST");
+        loadData();
+        return () => clearActions();
+    }, [setTitle, clearActions]);
+
     const filteredDoctors = doctors.filter(doc => {
-        if (filters.contractType && !doc.contract.includes(filters.contractType)) return false;
+        if (filters.contractType && !doc.contract.toLowerCase().includes(filters.contractType.toLowerCase())) return false;
         if (filters.department && doc.service !== filters.department) return false;
+        if (searchQuery && !doc.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
         return true;
     });
 
@@ -61,13 +108,9 @@ const SSTFinancialManagement = () => {
         if (filters.status && v.status !== filters.status) return false;
         if (filters.startDate && new Date(v.date) < new Date(filters.startDate)) return false;
         if (filters.endDate && new Date(v.date) > new Date(filters.endDate)) return false;
+        if (searchQuery && !v.doctor.toLowerCase().includes(searchQuery.toLowerCase())) return false;
         return true;
     });
-
-    useEffect(() => {
-        setTitle("Suivi RH & Budget SST");
-        return () => clearActions();
-    }, [setTitle, clearActions]);
 
     // --- HANDLERS ---
     const handleDelete = (id) => {
@@ -127,8 +170,9 @@ const SSTFinancialManagement = () => {
         setFormData({
             ...formData,
             doctor: doc.name,
+            practitioner_db_id: doc.id,
             contract: doc.contract,
-            id: `VST-${Math.floor(Math.random() * 1000)}`,
+            id: '',
             amount: doc.contract.includes('CDI') ? defaultRate : 0,
             nbVisits: 0,
             ratePerVisit: defaultRate
@@ -137,6 +181,45 @@ const SSTFinancialManagement = () => {
         setSideFilters({ start: '', end: '', dept: '' });
         setEditMode(false);
         setShowForm(true);
+    };
+
+    const handleSubmitOperation = async () => {
+        try {
+            setLoading(true);
+            if (editMode) {
+                // Logic for editing practitioner/doctor info
+                const practitionerId = formData.practitioner_db_id || formData.id;
+                const updatePayload = {
+                    name: formData.name.replace('Dr. ', '').split(' ')[1] || formData.name,
+                    firstName: formData.name.replace('Dr. ', '').split(' ')[0] || '',
+                    contract_type: formData.contract,
+                    service: formData.service
+                };
+                await axios.post(`${API_BASE_URL}/api/sst-practitioners/${practitionerId}`, updatePayload);
+                Swal.fire('Succès', 'Informations modifiées avec succès', 'success');
+            } else {
+                // Logic for creating a payment
+                const payload = {
+                    practitioner_id: formData.practitioner_db_id,
+                    amount: formData.amount,
+                    visit_ids: selectedVisits.map(v => v.db_id),
+                    status: 'Payé',
+                    payment_date: new Date().toISOString().split('T')[0]
+                };
+
+                await axios.post(`${API_BASE_URL}/api/sst-payments`, payload);
+                Swal.fire('Succès', 'Opération de règlement enregistrée', 'success');
+            }
+
+            setShowForm(false);
+            setEditMode(false);
+            loadData();
+        } catch (err) {
+            console.error('Operation failed', err);
+            Swal.fire('Erreur', 'L\'opération a échoué', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const toggleVisitSelection = (v) => {
@@ -465,12 +548,13 @@ const SSTFinancialManagement = () => {
                                     <Button variant="light" className="rounded-3 extra-small fw-bold" onClick={() => { setShowForm(false); setEditMode(false); }}>
                                         Annuler
                                     </Button>
-                                    <Button variant="primary" className="rounded-3 extra-small fw-bold px-4" onClick={() => {
-                                        setShowForm(false);
-                                        setEditMode(false);
-                                        Swal.fire('Succès', editMode ? 'Modifié avec succès' : 'Opération enregistrée', 'success');
-                                    }}>
-                                        {editMode ? "Enregistrer" : "Confirmer le règlement"}
+                                    <Button
+                                        variant="primary"
+                                        className="rounded-3 extra-small fw-bold px-4"
+                                        disabled={loading}
+                                        onClick={handleSubmitOperation}
+                                    >
+                                        {loading ? "Chargement..." : (editMode ? "Enregistrer" : "Confirmer le règlement")}
                                     </Button>
                                 </div>
                             }

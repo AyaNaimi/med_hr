@@ -62,7 +62,7 @@ const SSTConsultation = () => {
 
     // Filters for Step 0
     const [filterDept, setFilterDept] = useState('');
-    const [selectedVisitId, setSelectedVisitId] = useState('VST-002');
+    const [selectedVisitId, setSelectedVisitId] = useState('');
     const [sidebarFiltersVisible, setSidebarFiltersVisible] = useState(false);
     const [tableFiltersVisible, setTableFiltersVisible] = useState(false);
 
